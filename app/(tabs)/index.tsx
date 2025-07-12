@@ -1,5 +1,6 @@
 import CardComponent from "@/components/CardComponent";
 import HeaderComponent from "@/components/HeaderComponent";
+import { useTheme } from "@/contexts/ThemeContext";
 import React from "react";
 import { StyleSheet } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -7,9 +8,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import "../../global.css";
 
 export default function HomeScreen() {
+  const { colors } = useTheme();
+
   return (
     <GestureHandlerRootView className="flex-1">
-      <SafeAreaView>
+      <SafeAreaView style={{ backgroundColor: colors.background, flex: 1 }}>
         <HeaderComponent
           leftButton="List"
           title="仕事一覧"

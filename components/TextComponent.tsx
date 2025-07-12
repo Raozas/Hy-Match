@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useTheme } from "../contexts/ThemeContext";
 import { ThemedText } from "./ThemedText";
 
 type TextComponentType = "input" | "select" | "default";
@@ -33,6 +34,7 @@ export default function TextComponent({
   label,
   editable = "yes",
 }: TextComponentProps) {
+  const { colors } = useTheme();
   const [showModal, setShowModal] = useState(false);
   const [inputValue, setInputValue] = useState(text);
   const [isInfoVisible, setIsInfoVisible] = useState(false);
@@ -116,13 +118,17 @@ export default function TextComponent({
               onSubmitEditing={handleInputSubmit}
               placeholder={!label ? text : ""}
               editable={editable === "yes"}
-              className={`bg-white px-3 rounded-lg border border-[#acacac] ${textSizeClass} ${className}`}
+              className={`px-3 rounded-lg border ${textSizeClass} ${className}`}
               style={{
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
+                color: colors.text,
                 height: 48,
                 paddingTop: label ? 10 : 12,
                 paddingBottom: label ? 8 : 12,
                 opacity: editable === "no" ? 0.6 : 1,
               }}
+              placeholderTextColor={colors.textSecondary}
             />
             {label && (
               <Animated.View
@@ -167,8 +173,10 @@ export default function TextComponent({
               }
               onLongPress={showInfo}
               disabled={editable === "no"}
-              className={`flex-row items-center gap-2 border-solid border-[1px] rounded-[8px] border-[#acacac] px-3 py-2 justify-between bg-white ${className}`}
+              className={`flex-row items-center gap-2 border-solid border-[1px] rounded-[8px] px-3 py-2 justify-between ${className}`}
               style={{
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
                 height: 48,
                 paddingTop: label ? 20 : 12,
                 paddingBottom: label ? 8 : 12,
@@ -176,11 +184,12 @@ export default function TextComponent({
               }}
             >
               <ThemedText
-                className={`${textSizeClass} text-[#4E4E4E] font-semibold`}
+                className={`${textSizeClass} font-semibold`}
+                style={{ color: colors.text }}
               >
                 {text}
               </ThemedText>
-              <CaretDown size={16} color="#4E4E4E" />
+              <CaretDown size={16} color={colors.text} />
             </TouchableOpacity>
             {label && (
               <View
@@ -195,8 +204,8 @@ export default function TextComponent({
                 <Text
                   style={{
                     fontSize: 10,
-                    color: "#666",
-                    backgroundColor: "white",
+                    color: colors.textSecondary,
+                    backgroundColor: colors.surface,
                     paddingHorizontal: 4,
                   }}
                 >
@@ -206,9 +215,14 @@ export default function TextComponent({
             )}
             {isDropdownOpen && (
               <View
-                className={`absolute top-12 left-0 bg-white border border-[#C7C7C7] rounded-lg shadow-lg z-10 ${
+                className={`absolute top-12 left-0 rounded-lg shadow-lg z-10 ${
                   className?.includes("w-") ? "w-full" : "min-w-[150px]"
                 }`}
+                style={{
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  borderWidth: 1,
+                }}
               >
                 <ScrollView
                   style={{ maxHeight: options.length > 10 ? 250 : undefined }}
@@ -219,9 +233,16 @@ export default function TextComponent({
                     <TouchableOpacity
                       key={index}
                       onPress={() => handleSelectOption(option)}
-                      className="px-3 py-2 border-b border-[#F0F0F0] last:border-b-0"
+                      className="px-3 py-2 last:border-b-0"
+                      style={{
+                        borderBottomColor: colors.border,
+                        borderBottomWidth: index < options.length - 1 ? 1 : 0,
+                      }}
                     >
-                      <Text className={`${textSizeClass} text-[#4E4E4E]`}>
+                      <Text
+                        className={`${textSizeClass}`}
+                        style={{ color: colors.text }}
+                      >
                         {option}
                       </Text>
                     </TouchableOpacity>

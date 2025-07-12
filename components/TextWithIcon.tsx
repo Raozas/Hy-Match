@@ -1,6 +1,8 @@
 import { ThemedText } from "@/components/ThemedText";
 import {
   At,
+  Bank,
+  Briefcase,
   BuildingApartment,
   BuildingOffice,
   Buildings,
@@ -27,11 +29,9 @@ import {
   Newspaper,
   Numpad,
   Star,
+  Table,
   Train,
   Tram,
-  Briefcase,
-  Bank,
-  Table,
 } from "phosphor-react-native";
 import React, { useEffect, useState } from "react";
 import {
@@ -42,6 +42,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useTheme } from "../contexts/ThemeContext";
 
 const iconMap = {
   BuildingOffice,
@@ -172,6 +173,7 @@ const TextWithIcon = ({
   radioLabel = "",
   radioColor = "same",
 }: TextWithIconProps) => {
+  const { colors } = useTheme();
   const iconNames = icon.split("&");
   const isMultipleIcons = iconNames.length > 1;
   const [inputValue, setInputValue] = useState(text);
@@ -275,14 +277,17 @@ const TextWithIcon = ({
             value={inputValue}
             onChangeText={handleInputChange}
             editable={editable === "yes"}
-            className={`${getTextSizeClass()} h-[46px] pl-2 pt-0 text-[#4E4E4E] font-semibold bg-transparent border-solid border-[1px] rounded-[8px] border-[#acacac] pb-1 ${
+            className={`${getTextSizeClass()} h-[46px] pl-2 pt-0 font-semibold border-solid border-[1px] rounded-[8px] pb-1 ${
               className?.includes("w-") ? "" : "min-w-[100px]"
             }`}
             style={{
+              color: colors.text,
+              backgroundColor: colors.surface,
+              borderColor: colors.border,
               opacity: editable === "no" ? 0.6 : 1,
             }}
             placeholder={text}
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={colors.textSecondary}
           />
         );
 
@@ -294,26 +299,34 @@ const TextWithIcon = ({
                 editable === "yes" && setIsDropdownOpen(!isDropdownOpen)
               }
               disabled={editable === "no"}
-              className={`flex-row items-center gap-2 border-solid border-[1px] rounded-[8px] border-[#acacac] px-3 py-2 h-[48px] justify-between bg-white ${
+              className={`flex-row items-center gap-2 border-solid border-[1px] rounded-[8px] px-3 py-2 h-[48px] justify-between ${
                 className?.includes("w-") ? "" : "min-w-[98px]"
               }`}
               style={{
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
                 opacity: editable === "no" ? 0.6 : 1,
               }}
             >
               <ThemedText
                 type="defaultSemiBold"
-                className={`${getTextSizeClass()} text-[#4E4E4E] font-semibold`}
+                className={`${getTextSizeClass()} font-semibold`}
+                style={{ color: colors.text }}
               >
                 {selectedValue || text}
               </ThemedText>
-              <CaretDown size={16} color="#4E4E4E" />
+              <CaretDown size={16} color={colors.text} />
             </TouchableOpacity>
             {isDropdownOpen && (
               <View
-                className={`absolute top-12 left-0 bg-white border border-[#C7C7C7] rounded-lg shadow-lg z-10 ${
+                className={`absolute top-12 left-0 rounded-lg shadow-lg z-10 ${
                   className?.includes("w-") ? "w-full" : "min-w-[98px]"
                 }`}
+                style={{
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  borderWidth: 1,
+                }}
               >
                 <ScrollView
                   style={{ maxHeight: options.length > 10 ? 250 : undefined }}
@@ -324,9 +337,16 @@ const TextWithIcon = ({
                     <TouchableOpacity
                       key={index}
                       onPress={() => handleSelectChange(option)}
-                      className="px-3 py-2 border-b border-[#F0F0F0] last:border-b-0"
+                      className="px-3 py-2 last:border-b-0"
+                      style={{
+                        borderBottomColor: colors.border,
+                        borderBottomWidth: index < options.length - 1 ? 1 : 0,
+                      }}
                     >
-                      <Text className={`${getTextSizeClass()} text-[#4E4E4E]`}>
+                      <Text
+                        className={`${getTextSizeClass()}`}
+                        style={{ color: colors.text }}
+                      >
                         {option}
                       </Text>
                     </TouchableOpacity>
@@ -346,10 +366,12 @@ const TextWithIcon = ({
                 editable === "yes" && setIsDropdownOpen(!isDropdownOpen)
               }
               disabled={editable === "no"}
-              className={`flex-row items-center gap-2 border-solid border-[1px] rounded-[8px] border-[#acacac] px-3 py-2 h-[48px] justify-between bg-white ${
+              className={`flex-row items-center gap-2 border-solid border-[1px] rounded-[8px] px-3 py-2 h-[48px] justify-between ${
                 className?.includes("w-") ? "" : "min-w-[120px]"
               }`}
               style={{
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
                 opacity: editable === "no" ? 0.6 : 1,
               }}
             >
@@ -362,18 +384,24 @@ const TextWithIcon = ({
                   )}
                 <ThemedText
                   type="defaultSemiBold"
-                  className={`${getTextSizeClass()} text-[#4E4E4E] font-semibold`}
+                  className={`${getTextSizeClass()} font-semibold`}
+                  style={{ color: colors.text }}
                 >
                   {selectedValue || text}
                 </ThemedText>
               </View>
-              <CaretDown size={16} color="#4E4E4E" />
+              <CaretDown size={16} color={colors.text} />
             </TouchableOpacity>
             {isDropdownOpen && (
               <View
-                className={`absolute top-12 left-0 bg-white border border-[#C7C7C7] rounded-lg shadow-lg z-10 ${
+                className={`absolute top-12 left-0 rounded-lg shadow-lg z-10 ${
                   className?.includes("w-") ? "w-full" : "min-w-[200px]"
                 }`}
+                style={{
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  borderWidth: 1,
+                }}
               >
                 <ScrollView
                   style={{
@@ -386,12 +414,20 @@ const TextWithIcon = ({
                     <TouchableOpacity
                       key={index}
                       onPress={() => handleSelectChange(option)}
-                      className="flex-row items-center gap-3 px-3 py-2 border-b border-[#F0F0F0] last:border-b-0"
+                      className="flex-row items-center gap-3 px-3 py-2 last:border-b-0"
+                      style={{
+                        borderBottomColor: colors.border,
+                        borderBottomWidth:
+                          index < countryOptions.length - 1 ? 1 : 0,
+                      }}
                     >
                       <Text className="text-[20px]">
                         {countryFlags[option as keyof typeof countryFlags]}
                       </Text>
-                      <Text className={`${getTextSizeClass()} text-[#4E4E4E]`}>
+                      <Text
+                        className={`${getTextSizeClass()}`}
+                        style={{ color: colors.text }}
+                      >
                         {option}
                       </Text>
                     </TouchableOpacity>
@@ -466,7 +502,8 @@ const TextWithIcon = ({
                     )}
                     {labelData.text && (
                       <Text
-                        className={`${getTextSizeClass()} text-[#4E4E4E] font-medium`}
+                        className={`${getTextSizeClass()} font-medium`}
+                        style={{ color: colors.text }}
                       >
                         {labelData.text}
                       </Text>
@@ -483,11 +520,12 @@ const TextWithIcon = ({
           <View className="flex-col items-center gap-0 w-[80px]">
             <ThemedText
               type="defaultSemiBold"
-              className="text-[20px] text-[#4E4E4E] mb-[-10px]"
+              className="text-[20px] mb-[-10px]"
+              style={{ color: colors.text }}
             >
               {text}
             </ThemedText>
-            <GitCommit size={32} color="#4E4E4E" />
+            <GitCommit size={32} color={colors.text} />
           </View>
         );
 
@@ -497,14 +535,16 @@ const TextWithIcon = ({
             <View className="h-[31px] w-[31px]  rounded-full border border-[#00771A] p-[2px]">
               <ThemedText
                 type="defaultSemiBold"
-                className="!text-[10px] text-[#4E4E4E]"
+                className="!text-[10px]"
+                style={{ color: colors.text }}
               >
                 {text2nd}
               </ThemedText>
             </View>
             <ThemedText
               type="defaultSemiBold"
-              className="text-[15px] text-[#4E4E4E]"
+              className="text-[15px]"
+              style={{ color: colors.text }}
             >
               {text}
             </ThemedText>
@@ -515,7 +555,8 @@ const TextWithIcon = ({
         return (
           <ThemedText
             type="defaultSemiBold"
-            className="text-[20px] text-[#4E4E4E]"
+            className="text-[20px]"
+            style={{ color: colors.text }}
           >
             {text}
           </ThemedText>

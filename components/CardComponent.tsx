@@ -1,24 +1,51 @@
 import React from "react";
 import { View } from "react-native";
+import { useTheme } from "../contexts/ThemeContext";
 import TextWithIcon from "./TextWithIcon";
 import WeekDays from "./WeekDays";
 
-export const Separator = ({ width = 332 }: { width?: number }) => (
-  <View className="h-[1px] bg-[#c7c7c7] my-[15px]" style={{ width }} />
-);
+export const Separator = ({ width = 332 }: { width?: number }) => {
+  const { colors } = useTheme();
+  return (
+    <View
+      style={{
+        height: 1,
+        backgroundColor: colors.border,
+        marginVertical: 15,
+        width,
+      }}
+    />
+  );
+};
 
-export const HorizontalLine = () => (
-  <View className="h-[78px] w-[1px] bg-[#c7c7c7] my-[-15px]" />
-);
+export const HorizontalLine = () => {
+  const { colors } = useTheme();
+  return (
+    <View
+      style={{
+        height: 78,
+        width: 1,
+        backgroundColor: colors.border,
+        marginVertical: -15,
+      }}
+    />
+  );
+};
 
 interface CardComponentProps {
   className?: string;
 }
 
 const CardComponent = ({ className }: CardComponentProps) => {
+  const { colors } = useTheme();
+
   return (
     <View
-      className={`flex-col gap-2 bg-[#F7F9FF] h-[590px] w-[360px] rounded-[33px] border-solid border-[#B98B8B] border-[1px] px-2.5 py-6  ${className || ""}`}
+      style={{
+        backgroundColor: colors.surface,
+        borderColor: colors.border,
+      }}
+      className={`flex-col gap-2 h-[590px] w-[360px] rounded-[33px] border-solid border-[1px] px-2.5 py-6  ${className || ""}`}
     >
       <TextWithIcon icon="BuildingOffice" text="株式会社" />
       <Separator />

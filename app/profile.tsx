@@ -6,6 +6,7 @@ import TextComponent from "@/components/TextComponent";
 import TextWithIcon from "@/components/TextWithIcon";
 import VideoPickerComponent from "@/components/VideoPickerComponent";
 import WeekDays from "@/components/WeekDays";
+import { useTheme } from "@/contexts/ThemeContext";
 import * as FileSystem from "expo-file-system";
 import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
@@ -17,6 +18,7 @@ import "../global.css";
 import { databaseService, UserProfile } from "../utils/database";
 
 export default function ProfileScreen() {
+  const { colors } = useTheme();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [profileVideo, setProfileVideo] = useState<string | null>(null);
@@ -927,7 +929,10 @@ export default function ProfileScreen() {
 
   return (
     <ErrorBoundary>
-      <SafeAreaView className="flex-1 bg-white">
+      <SafeAreaView
+        style={{ backgroundColor: colors.background }}
+        className="flex-1"
+      >
         <HeaderComponent
           leftButton="Info"
           onLeftPress={() => alert("Show user info")}
