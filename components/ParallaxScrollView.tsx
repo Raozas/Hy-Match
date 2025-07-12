@@ -11,7 +11,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { useBottomTabOverflow } from '@/components/ui/TabBarBackground';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
-const HEADER_HEIGHT = 250;
+const HEADER_HEIGHT = 130;
 
 type Props = PropsWithChildren<{
   headerImage: ReactElement;
@@ -75,7 +75,9 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: 32,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingTop: 30,
     gap: 16,
     overflow: 'hidden',
   },
