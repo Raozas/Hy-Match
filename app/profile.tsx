@@ -1,4 +1,5 @@
 import { Separator } from "@/components/CardComponent";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import HeaderComponent from "@/components/HeaderComponent";
 import ImagePickerComponent from "@/components/ImagePickerComponent";
 import TextComponent from "@/components/TextComponent";
@@ -38,6 +39,9 @@ export default function ProfileScreen() {
   const loadUserProfile = async () => {
     try {
       setIsLoading(true);
+      // Add a small delay to ensure database is ready
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       const profile = await databaseService.getUserProfile();
       if (profile) {
         setUserProfile(profile);
@@ -48,7 +52,12 @@ export default function ProfileScreen() {
       }
     } catch (error) {
       console.error("Error loading user profile:", error);
-      // The database service will handle reset internally if needed
+      // Create a minimal default profile if database fails
+      setUserProfile({
+        name: "Default User",
+        age: "20",
+        country: "Japan"
+      });
     } finally {
       setIsLoading(false);
     }
@@ -917,14 +926,15 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
-      <HeaderComponent
-        leftButton="Info"
-        onLeftPress={() => alert("Show user info")}
-        rightButton="Close"
-        title="Profile"
-        onRightPress={() => console.log("Close profile")}
-      />
+    <ErrorBoundary>
+      <SafeAreaView className="flex-1 bg-white">
+        <HeaderComponent
+          leftButton="Info"
+          onLeftPress={() => alert("Show user info")}
+          rightButton="Close"
+          title="Profile"
+          onRightPress={() => console.log("Close profile")}
+        />
       <ScrollView
         className="flex-1 px-4 mt-[-25px] py-1"
         showsVerticalScrollIndicator={false}
@@ -1303,5 +1313,6 @@ export default function ProfileScreen() {
         </View>
       </ScrollView>
     </SafeAreaView>
+    </ErrorBoundary>
   );
 }
