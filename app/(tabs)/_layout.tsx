@@ -1,5 +1,5 @@
 import { Tabs } from "expo-router";
-import { House, PaperPlaneTilt } from "phosphor-react-native";
+import { House, PaperPlaneTilt, HandWithdraw } from "phosphor-react-native";
 import React from "react";
 import { Platform } from "react-native";
 
@@ -44,9 +44,9 @@ export default function TabLayout() {
       <Tabs.Screen
         name="explore"
         options={{
-          title: "Explore",
+          title: "Jobs",
           tabBarIcon: ({ color }) => (
-            <PaperPlaneTilt size={28} color={color} weight="fill" />
+            <HandWithdraw size={28} color={color} weight="fill" />
           ),
         }}
       />

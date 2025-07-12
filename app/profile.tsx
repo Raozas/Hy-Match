@@ -1013,6 +1013,7 @@ export default function ProfileScreen() {
             radioColor="same&#FF6B6B&#4ECDC4"
             editable={isEditable}
             onValueChange={handleGenderChange}
+            info="Select your gender"
           />
           <Separator width={360} />
           <View className="flex-row gap-[11px]">
@@ -1220,6 +1221,7 @@ export default function ProfileScreen() {
             useHours="no"
             editable={isEditable}
             onAirChange={handleAvailableDaysChange}
+            info="Select the days you are available to work. You can choose multiple days."
           />
           <Separator width={360} />
           <View className="flex-row gap-[11px]">

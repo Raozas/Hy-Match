@@ -50,16 +50,11 @@ export default function TextComponent({
   }, [text]);
 
   const getTextSizeClass = (className: string): string => {
-    const textSizeMatch = className.match(/!?text-\[(\d+)px\]/);
+    const textSizeMatch = className.match(/!?text-\[([^\]]+)\]/);
     if (textSizeMatch) {
-      const size = parseInt(textSizeMatch[1]);
-      if (size <= 10) return "text-xs";
-      if (size <= 12) return "text-sm";
-      if (size <= 14) return "text-base";
-      if (size <= 16) return "text-lg";
-      return "text-xl";
+      return textSizeMatch[0]; // Return the full match like "text-[12px]"
     }
-    return "text-sm";
+    return "text-[14px]"; // Default size
   };
 
   const textSizeClass = getTextSizeClass(className);
@@ -258,16 +253,19 @@ export default function TextComponent({
           <View className="relative">
             <TouchableOpacity
               onLongPress={showInfo}
-              className={`bg-gray-100 px-3 rounded-lg border border-gray-300 ${className}`}
+              className={` px-3  ${className}`}
               style={{
                 height: 48,
                 paddingTop: label ? 20 : 12,
                 paddingBottom: label ? 8 : 12,
               }}
             >
-              <ThemedText className={`${textSizeClass} text-gray-700`}>
+              <Text
+                className={`${textSizeClass} font-semibold`}
+                style={{ color: colors.text }}
+              >
                 {text}
-              </ThemedText>
+              </Text>
             </TouchableOpacity>
             {label && (
               <View

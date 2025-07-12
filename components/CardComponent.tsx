@@ -32,11 +32,27 @@ export const HorizontalLine = () => {
   );
 };
 
+export interface JobData {
+  id: string;
+  company: string;
+  position: string;
+  salary: string;
+  languageSkill: string;
+  walkTime: string;
+  station: string;
+  stationCode: string;
+  onAir: string;
+  hours: string;
+  rating: string;
+  status: "pending" | "choosed" | "refusal";
+}
+
 interface CardComponentProps {
+  jobData: JobData;
   className?: string;
 }
 
-const CardComponent = ({ className }: CardComponentProps) => {
+const CardComponent = ({ jobData, className }: CardComponentProps) => {
   const { colors } = useTheme();
 
   return (
@@ -47,20 +63,20 @@ const CardComponent = ({ className }: CardComponentProps) => {
       }}
       className={`flex-col gap-2 h-[590px] w-[360px] rounded-[33px] border-solid border-[1px] px-2.5 py-6  ${className || ""}`}
     >
-      <TextWithIcon icon="BuildingOffice" text="株式会社" />
+      <TextWithIcon icon="BuildingOffice" text={jobData.company} />
       <Separator />
-      <TextWithIcon icon="GraduationCap" text="仕分け" />
+      <TextWithIcon icon="GraduationCap" text={jobData.position} />
       <Separator />
       <View className="flex-row items-center">
         <TextWithIcon
           icon="CurrencyJpy"
-          text="¥1,000 ~ 1,500"
+          text={jobData.salary}
           className="w-[174px]"
         />
         <HorizontalLine />
         <TextWithIcon
           icon="ChatsCircle"
-          text="N2"
+          text={jobData.languageSkill}
           type="LanSkill"
           className="w-[164px] ml-2.5"
         />
@@ -69,28 +85,28 @@ const CardComponent = ({ className }: CardComponentProps) => {
       <View className="flex-row items-center">
         <TextWithIcon
           icon="HouseLine&Footprints"
-          text="~15分"
+          text={jobData.walkTime}
           className="w-[174px]"
         />
         <HorizontalLine />
         <TextWithIcon
           icon="Tram"
-          text="渋谷駅"
+          text={jobData.station}
           className="w-[164px] ml-2.5"
           type="TrainSt"
-          text2nd="JA12"
+          text2nd={jobData.stationCode}
         />
       </View>
       <Separator />
       <WeekDays
-        onAir="月&火&水&木"
-        hours="9:00~17:00"
+        onAir={jobData.onAir}
+        hours={jobData.hours}
         useHours="yes"
         editable="no"
         onAirChange={(newOnAir) => console.log(newOnAir)}
       />
       <Separator />
-      <TextWithIcon icon="Star" text="" className="w-[174px]" />
+      <TextWithIcon icon="Star" text={jobData.rating} className="w-[174px]" />
     </View>
   );
 };

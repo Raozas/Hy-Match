@@ -523,7 +523,7 @@ const TextWithIcon = ({
               className="text-[20px] mb-[-10px]"
               style={{ color: colors.text }}
             >
-              {text}
+              {text || ""}
             </ThemedText>
             <GitCommit size={32} color={colors.text} />
           </View>
@@ -538,7 +538,7 @@ const TextWithIcon = ({
                 className="!text-[10px]"
                 style={{ color: colors.text }}
               >
-                {text2nd}
+                {text2nd || ""}
               </ThemedText>
             </View>
             <ThemedText
@@ -546,20 +546,19 @@ const TextWithIcon = ({
               className="text-[15px]"
               style={{ color: colors.text }}
             >
-              {text}
+              {text || ""}
             </ThemedText>
           </View>
         );
 
       default:
         return (
-          <ThemedText
-            type="defaultSemiBold"
-            className="text-[20px]"
+          <Text
+            className={`${getTextSizeClass()} font-medium`}
             style={{ color: colors.text }}
           >
-            {text}
-          </ThemedText>
+            {text || ""}
+          </Text>
         );
     }
   };

@@ -1,14 +1,18 @@
-import CardComponent from "@/components/CardComponent";
+import CardComponent, { JobData } from "@/components/CardComponent";
 import HeaderComponent from "@/components/HeaderComponent";
 import { useTheme } from "@/contexts/ThemeContext";
 import React from "react";
 import { StyleSheet } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
+import jobDataJson from "../../data/jobData.json";
 import "../../global.css";
 
 export default function HomeScreen() {
   const { colors } = useTheme();
+
+  // Type assertion for the imported JSON data
+  const jobData = jobDataJson as { jobs: JobData[] };
 
   return (
     <GestureHandlerRootView className="flex-1">
@@ -20,7 +24,7 @@ export default function HomeScreen() {
           onLeftPress={() => console.log("List pressed")}
           onRightPress={() => console.log("Filter pressed")}
         />
-        <CardComponent className="ml-[16px]" />
+        <CardComponent className="ml-[16px]" jobData={jobData.jobs[0]} />
       </SafeAreaView>
     </GestureHandlerRootView>
   );
