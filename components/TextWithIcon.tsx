@@ -157,6 +157,7 @@ interface TextWithIconProps {
   radioNum?: string;
   radioLabel?: string;
   radioColor?: string;
+  currentValue?: string;
 }
 
 const TextWithIcon = ({
@@ -172,6 +173,7 @@ const TextWithIcon = ({
   radioNum = "2",
   radioLabel = "",
   radioColor = "same",
+  currentValue,
 }: TextWithIconProps) => {
   const { colors } = useTheme();
   const iconNames = icon.split("&");
@@ -187,6 +189,22 @@ const TextWithIcon = ({
     setInputValue(text);
     setSelectedValue(text);
   }, [text]);
+
+  // Sync radio selection with currentValue for gender
+  useEffect(() => {
+    if (type === "radio" && currentValue) {
+      // Map gender values back to radio format
+      const genderToRadioMap: Record<string, string> = {
+        Male: "radio_0",
+        Female: "radio_1",
+        Other: "radio_2",
+      };
+      const radioValue = genderToRadioMap[currentValue];
+      if (radioValue) {
+        setSelectedRadio(radioValue);
+      }
+    }
+  }, [currentValue, type]);
 
   // Extract text size from className prop
   const getTextSizeClass = () => {

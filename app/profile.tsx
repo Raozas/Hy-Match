@@ -22,8 +22,8 @@ export default function ProfileScreen() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [profileVideo, setProfileVideo] = useState<string | null>(null);
-  const [isEditable, setIsEditable] = useState<"yes" | "no">("yes");
-  const [saveButtonText, setSaveButtonText] = useState("保存");
+  const [isEditable, setIsEditable] = useState<"yes" | "no">("no");
+  const [saveButtonText, setSaveButtonText] = useState("編集");
   const [isLoading, setIsLoading] = useState(true);
   const [pendingChanges, setPendingChanges] = useState<boolean>(false);
 
@@ -137,7 +137,6 @@ export default function ProfileScreen() {
   };
 
   const handleGenderChange = async (newGender: string) => {
-    // Map radio values to meaningful gender values
     const genderMap: Record<string, string> = {
       radio_0: "Male",
       radio_1: "Female",
@@ -149,7 +148,32 @@ export default function ProfileScreen() {
     const updatedProfile: UserProfile = {
       ...userProfile,
       name: userProfile?.name || "Default Name",
+      age: userProfile?.age,
+      country: userProfile?.country,
       gender: genderValue,
+      homeStation: userProfile?.homeStation,
+      timeToStationFromHome: userProfile?.timeToStationFromHome,
+      schoolStation: userProfile?.schoolStation,
+      timeToStationFromSchool: userProfile?.timeToStationFromSchool,
+      postalCode: userProfile?.postalCode,
+      prefecture: userProfile?.prefecture,
+      city1: userProfile?.city1,
+      city2: userProfile?.city2,
+      streetAddress: userProfile?.streetAddress,
+      phoneNumber: userProfile?.phoneNumber,
+      email: userProfile?.email,
+      visaType: userProfile?.visaType,
+      visaValidityPeriod: userProfile?.visaValidityPeriod,
+      residenceStatus: userProfile?.residenceStatus,
+      residenceStatusChangeSchedule: userProfile?.residenceStatusChangeSchedule,
+      japaneseLevel: userProfile?.japaneseLevel,
+      availableFromTime: userProfile?.availableFromTime,
+      availableToTime: userProfile?.availableToTime,
+      currentOccupation: userProfile?.currentOccupation,
+      desiredJobType: userProfile?.desiredJobType,
+      workHistory: userProfile?.workHistory,
+      availableDays: userProfile?.availableDays,
+      preferredWorkStyle: userProfile?.preferredWorkStyle,
       profileImage: profileImage || undefined,
       profileVideo: profileVideo || undefined,
     };
@@ -583,7 +607,11 @@ export default function ProfileScreen() {
   }, [userProfile?.country, userProfile?.prefecture, isLoading]);
 
   const handleSaveEdit = async () => {
-    if (isEditable === "yes") {
+    if (isEditable === "no") {
+      // Enable editing
+      setIsEditable("yes");
+      setSaveButtonText("保存");
+    } else {
       // Force save any pending changes immediately
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
@@ -602,10 +630,6 @@ export default function ProfileScreen() {
 
       setIsEditable("no");
       setSaveButtonText("編集");
-    } else {
-      // Enable editing
-      setIsEditable("yes");
-      setSaveButtonText("保存");
     }
   };
 
@@ -1014,6 +1038,7 @@ export default function ProfileScreen() {
             editable={isEditable}
             onValueChange={handleGenderChange}
             info="Select your gender"
+            currentValue={userProfile?.gender}
           />
           <Separator width={360} />
           <View className="flex-row gap-[11px]">

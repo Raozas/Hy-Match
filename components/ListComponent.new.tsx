@@ -167,22 +167,12 @@ const ListComponent = forwardRef<ListComponentRef, ListComponentProps>(
         )}
 
         <View className="flex-1 px-4 mt-[-50px]">
-          <ScrollView
-            horizontal={true}
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{
-              paddingVertical: 16,
-              paddingHorizontal: 4,
-            }}
-            style={{ flexGrow: 0 }}
-          >
-            <View className="flex-row gap-3">
-              <FilterButton filter="all" label="全て" />
-              <FilterButton filter="pending" label="保留中" />
-              <FilterButton filter="choosed" label="選択済み" />
-              <FilterButton filter="refusal" label="拒否済み" />
-            </View>
-          </ScrollView>
+          <View className="flex-row gap-3 py-4">
+            <FilterButton filter="all" label="全て" />
+            <FilterButton filter="pending" label="保留中" />
+            <FilterButton filter="choosed" label="選択済み" />
+            <FilterButton filter="refusal" label="拒否済み" />
+          </View>
 
           <View className="flex-row items-center justify-between mb-4">
             <Text

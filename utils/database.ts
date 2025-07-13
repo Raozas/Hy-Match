@@ -218,12 +218,20 @@ const LOCATION_DATA = {
 
 class DatabaseService {
   constructor() {
-    this.initDatabase();
+    try {
+      console.log('Initializing DatabaseService...');
+      this.initDatabase();
+      console.log('DatabaseService initialized successfully');
+    } catch (error) {
+      console.error('Failed to initialize DatabaseService:', error);
+      throw error;
+    }
   }
 
-  private initDatabase() {
+  // Public method to initialize database
+  initDatabase() {
     try {
-      // Create the table with ALL columns from the start
+      // Create the user profiles table with ALL columns from the start
       db.execSync(
         `CREATE TABLE IF NOT EXISTS user_profiles (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -260,49 +268,7 @@ class DatabaseService {
         );`
       );
 
-      // Add missing columns for existing databases (backwards compatibility)
-      const addColumnIfNotExists = (columnName: string, columnType: string) => {
-        try {
-          const columns = db.getAllSync(`PRAGMA table_info(user_profiles);`);
-          const hasColumn = columns.some((col: any) => col.name === columnName);
-          
-          if (!hasColumn) {
-            console.log(`Adding ${columnName} column to database`);
-            db.execSync(`ALTER TABLE user_profiles ADD COLUMN ${columnName} ${columnType};`);
-            console.log(`Successfully added ${columnName} column`);
-          }
-        } catch (error) {
-          console.error(`Error adding ${columnName} column:`, error);
-        }
-      };
-
-      // Only add columns that might be missing from older versions
-      addColumnIfNotExists('profile_video', 'TEXT');
-      addColumnIfNotExists('age', 'TEXT');
-      addColumnIfNotExists('gender', 'TEXT');
-      addColumnIfNotExists('country', 'TEXT');
-      addColumnIfNotExists('home_station', 'TEXT');
-      addColumnIfNotExists('time_to_station_from_home', 'TEXT');
-      addColumnIfNotExists('school_station', 'TEXT');
-      addColumnIfNotExists('time_to_station_from_school', 'TEXT');
-      addColumnIfNotExists('postal_code', 'TEXT');
-      addColumnIfNotExists('prefecture', 'TEXT');
-      addColumnIfNotExists('city1', 'TEXT');
-      addColumnIfNotExists('city2', 'TEXT');
-      addColumnIfNotExists('street_address', 'TEXT');
-      addColumnIfNotExists('phone_number', 'TEXT');
-      addColumnIfNotExists('email', 'TEXT');
-      addColumnIfNotExists('visa_type', 'TEXT');
-      addColumnIfNotExists('visa_validity_period', 'TEXT');
-      addColumnIfNotExists('residence_status', 'TEXT');
-      addColumnIfNotExists('residence_status_change_schedule', 'TEXT');
-      addColumnIfNotExists('japanese_level', 'TEXT');
-      addColumnIfNotExists('available_from_time', 'TEXT');
-      addColumnIfNotExists('available_to_time', 'TEXT');
-      addColumnIfNotExists('current_occupation', 'TEXT');
-      addColumnIfNotExists('desired_job_type', 'TEXT');
-      addColumnIfNotExists('work_history', 'TEXT');
-      addColumnIfNotExists('available_days', 'TEXT');
+      console.log('Database tables created successfully');
       
       console.log('Database initialization complete');
       
@@ -317,18 +283,15 @@ class DatabaseService {
       // First, ensure database is healthy
       await this.ensureTableExists();
       
-      // Use a simpler approach with prepared statement
-      const statement = await db.prepareAsync(
+      // Use runSync for direct execution
+      const result = db.runSync(
         `INSERT OR REPLACE INTO user_profiles 
          (name, age, gender, country, home_station, time_to_station_from_home, school_station, time_to_station_from_school, 
           postal_code, prefecture, city1, city2, street_address, phone_number, email, profile_image, profile_video,
           visa_type, visa_validity_period, residence_status, residence_status_change_schedule, japanese_level,
           available_from_time, available_to_time, current_occupation, desired_job_type, work_history, available_days, updated_at) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`
-      );
-      
-      try {
-        const result = await statement.executeAsync([
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+        [
           profile.name, 
           profile.age || '', 
           profile.gender || '',
@@ -357,67 +320,15 @@ class DatabaseService {
           profile.desiredJobType || '',
           profile.workHistory || '',
           profile.availableDays || ''
-        ]);
-        
-        await statement.finalizeAsync();
-        return result.lastInsertRowId;
-        
-      } catch (executeError) {
-        await statement.finalizeAsync();
-        throw executeError;
-      }
+        ]
+      );
       
+      console.log('User profile saved successfully');
+      return result.lastInsertRowId;
+        
     } catch (error) {
       console.error('Error saving user profile:', error);
-      
-      // Fallback to synchronous method
-      try {
-        console.log('Attempting fallback sync method...');
-        const result = db.runSync(
-          `INSERT OR REPLACE INTO user_profiles 
-           (name, age, gender, country, home_station, time_to_station_from_home, school_station, time_to_station_from_school, 
-            postal_code, prefecture, city1, city2, street_address, phone_number, email, profile_image, profile_video,
-            visa_type, visa_validity_period, residence_status, residence_status_change_schedule, japanese_level,
-            available_from_time, available_to_time, current_occupation, desired_job_type, work_history, available_days, updated_at) 
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
-          [
-            profile.name, 
-            profile.age || '', 
-            profile.gender || '',
-            profile.country || '', 
-            profile.homeStation || '', 
-            profile.timeToStationFromHome || '',
-            profile.schoolStation || '',
-            profile.timeToStationFromSchool || '',
-            profile.postalCode || '',
-            profile.prefecture || '',
-            profile.city1 || '',
-            profile.city2 || '',
-            profile.streetAddress || '',
-            profile.phoneNumber || '',
-            profile.email || '',
-            profile.profileImage || '', 
-            profile.profileVideo || '',
-            profile.visaType || '',
-            profile.visaValidityPeriod || '',
-            profile.residenceStatus || '',
-            profile.residenceStatusChangeSchedule || '',
-            profile.japaneseLevel || '',
-            profile.availableFromTime || '',
-            profile.availableToTime || '',
-            profile.currentOccupation || '',
-            profile.desiredJobType || '',
-            profile.workHistory || '',
-            profile.availableDays || ''
-          ]
-        );
-        console.log('Fallback sync method succeeded');
-        return result.lastInsertRowId;
-        
-      } catch (fallbackError) {
-        console.error('Fallback sync method also failed:', fallbackError);
-        throw error;
-      }
+      throw error;
     }
   }
 
@@ -640,6 +551,43 @@ class DatabaseService {
     } catch (error) {
       console.error('Database health check failed:', error);
       return false;
+    }
+  }
+
+  // Test method to verify database is working
+  testDatabase(): boolean {
+    try {
+      console.log('Testing database connection...');
+      
+      // Test database connection
+      const result = db.runSync('SELECT 1 as test');
+      console.log('Database test result:', result);
+      
+      return true;
+    } catch (error) {
+      console.error('Database test failed:', error);
+      return false;
+    }
+  }
+
+  // Method to get detailed database info
+  getDatabaseInfo(): any {
+    try {
+      const tables = db.getAllSync(
+        "SELECT name FROM sqlite_master WHERE type='table'"
+      );
+      
+      return {
+        tables,
+        isWorking: true
+      };
+    } catch (error) {
+      console.error('Error getting database info:', error);
+      return {
+        tables: [],
+        isWorking: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
     }
   }
 }
