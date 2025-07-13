@@ -2,6 +2,7 @@ import { Check, X } from "phosphor-react-native";
 import React from "react";
 import { Animated, Text, TouchableOpacity, View } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
+import { useLanguage } from "../contexts/LanguageContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { JobData } from "./CardComponent";
 import TextComponent from "./TextComponent";
@@ -21,6 +22,7 @@ const JobListItem = ({
   className,
 }: JobListItemProps) => {
   const { colors } = useTheme();
+  const { t } = useLanguage();
 
   const getSwipeActions = () => {
     switch (jobData.status) {
@@ -28,14 +30,14 @@ const JobListItem = ({
         return [
           {
             action: "choose",
-            label: "選択",
+            label: t("swipe.choose"),
             icon: Check,
             backgroundColor: "#4CAF50",
             newStatus: "choosed" as const,
           },
           {
             action: "refuse",
-            label: "拒否",
+            label: t("swipe.refuse"),
             icon: X,
             backgroundColor: "#F44336",
             newStatus: "refusal" as const,
@@ -45,7 +47,7 @@ const JobListItem = ({
         return [
           {
             action: "refuse",
-            label: "拒否",
+            label: t("swipe.refuse"),
             icon: X,
             backgroundColor: "#F44336",
             newStatus: "refusal" as const,
@@ -55,7 +57,7 @@ const JobListItem = ({
         return [
           {
             action: "choose",
-            label: "選択",
+            label: t("swipe.choose"),
             icon: Check,
             backgroundColor: "#4CAF50",
             newStatus: "choosed" as const,

@@ -1,3 +1,4 @@
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { X } from "phosphor-react-native";
 import React, {
@@ -38,6 +39,7 @@ const ListComponent = forwardRef<ListComponentRef, ListComponentProps>(
     ref
   ) => {
     const { colors } = useTheme();
+    const { t } = useLanguage();
     const [selectedFilter, setSelectedFilter] = useState<
       "all" | "pending" | "choosed" | "refusal"
     >(filterStatus);
@@ -107,11 +109,11 @@ const ListComponent = forwardRef<ListComponentRef, ListComponentProps>(
     const getStatusText = (status: string) => {
       switch (status) {
         case "pending":
-          return "保留中";
+          return t("filter.pending");
         case "choosed":
-          return "選択済み";
+          return t("filter.chosen");
         case "refusal":
-          return "拒否済み";
+          return t("filter.refused");
         default:
           return status;
       }
@@ -177,10 +179,10 @@ const ListComponent = forwardRef<ListComponentRef, ListComponentProps>(
             style={{ flexGrow: 0 }}
           >
             <View className="flex-row gap-3">
-              <FilterButton filter="all" label="全て" />
-              <FilterButton filter="pending" label="保留中" />
-              <FilterButton filter="choosed" label="選択済み" />
-              <FilterButton filter="refusal" label="拒否済み" />
+              <FilterButton filter="all" label={t("filter.all")} />
+              <FilterButton filter="pending" label={t("filter.pending")} />
+              <FilterButton filter="choosed" label={t("filter.chosen")} />
+              <FilterButton filter="refusal" label={t("filter.refused")} />
             </View>
           </ScrollView>
 
@@ -188,7 +190,7 @@ const ListComponent = forwardRef<ListComponentRef, ListComponentProps>(
             <Text
               style={{ color: colors.text, fontSize: 16, fontWeight: "600" }}
             >
-              {filteredJobs.length} 件の仕事
+              {filteredJobs.length} {t("list.jobsCount")}
             </Text>
             <View className="flex-row items-center gap-2">
               <View
@@ -197,7 +199,7 @@ const ListComponent = forwardRef<ListComponentRef, ListComponentProps>(
               />
               <Text style={{ color: colors.textSecondary, fontSize: 14 }}>
                 {selectedFilter === "all"
-                  ? "全ステータス"
+                  ? t("list.allStatuses")
                   : getStatusText(selectedFilter)}
               </Text>
             </View>
@@ -218,7 +220,7 @@ const ListComponent = forwardRef<ListComponentRef, ListComponentProps>(
                     textAlign: "center",
                   }}
                 >
-                  読み込み中...
+                  {t("list.loading")}
                 </Text>
               </View>
             ) : filteredJobs.length > 0 ? (
@@ -255,8 +257,8 @@ const ListComponent = forwardRef<ListComponentRef, ListComponentProps>(
                   }}
                 >
                   {selectedFilter === "all"
-                    ? "仕事が見つかりませんでした"
-                    : `${getStatusText(selectedFilter)}の仕事はありません`}
+                    ? t("list.noJobsFound")
+                    : `${t("list.noJobsForStatus")}${getStatusText(selectedFilter)}`}
                 </Text>
               </View>
             )}
@@ -297,7 +299,7 @@ const ListComponent = forwardRef<ListComponentRef, ListComponentProps>(
                     marginLeft: 20,
                   }}
                 >
-                  仕事詳細
+                  {t("list.jobDetails")}
                 </Text>
                 <TouchableOpacity
                   onPress={closeModal}

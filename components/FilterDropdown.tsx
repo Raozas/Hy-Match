@@ -1,3 +1,4 @@
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { CaretDown, CaretUp, Check, X } from "phosphor-react-native";
 import React, { useState } from "react";
@@ -27,34 +28,34 @@ export interface FilterOptions {
 }
 
 const sortOptions: SortOption[] = [
-  { id: "salary", label: "By Salary", value: "salary" },
-  { id: "walkTime", label: "Commuting Time (from Home)", value: "walkTime" },
+  { id: "salary", label: "filter.bySalary", value: "salary" },
+  { id: "walkTime", label: "filter.commutingTimeHome", value: "walkTime" },
   {
     id: "commutingFromSchool",
-    label: "Commuting Time (from School)",
+    label: "filter.commutingTimeSchool",
     value: "commutingFromSchool",
   },
   {
     id: "publicationDate",
-    label: "By Publication Date",
+    label: "filter.byPublicationDate",
     value: "publicationDate",
   },
 ];
 
 const professionOptions = [
-  "仕分け",
-  "配送",
-  "清掃",
-  "レジ",
-  "倉庫作業",
-  "調理補助",
-  "データ入力",
-  "販売員",
-  "事務補助",
-  "梱包作業",
-  "受付",
-  "ピッキング",
-  "製造補助",
+  "profession.sorting",
+  "profession.delivery",
+  "profession.cleaning",
+  "profession.cashier",
+  "profession.warehouse",
+  "profession.cookingAssistant",
+  "profession.dataEntry",
+  "profession.salesClerk",
+  "profession.officeAssistant",
+  "profession.packing",
+  "profession.receptionist",
+  "profession.picking",
+  "profession.manufacturingAssistant",
 ];
 
 const japaneseLevels = ["N1", "N2", "N3", "N4", "N5"];
@@ -70,6 +71,7 @@ export default function FilterDropdown({
   jobs,
 }: FilterDropdownProps) {
   const { colors } = useTheme();
+  const { t } = useLanguage();
 
   const [sortBy, setSortBy] = useState<string>("");
   const [selectedProfessions, setSelectedProfessions] = useState<string[]>([]);
@@ -236,13 +238,13 @@ export default function FilterDropdown({
 
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Sort By Section */}
-        <SectionHeader title="Sort by:" section="sort" />
+        <SectionHeader title={t("filter.sortBy")} section="sort" />
         {expandedSections.sort && (
           <View>
             {sortOptions.map((option) => (
               <OptionItem
                 key={option.id}
-                label={option.label}
+                label={t(option.label)}
                 selected={sortBy === option.id}
                 onPress={() => setSortBy(option.id)}
               />
@@ -251,13 +253,16 @@ export default function FilterDropdown({
         )}
 
         {/* Profession Filter */}
-        <SectionHeader title="Desired Profession" section="profession" />
+        <SectionHeader
+          title={t("filter.desiredProfession")}
+          section="profession"
+        />
         {expandedSections.profession && (
           <View>
             {professionOptions.map((profession) => (
               <OptionItem
                 key={profession}
-                label={profession}
+                label={t(profession)}
                 selected={selectedProfessions.includes(profession)}
                 onPress={() => toggleProfession(profession)}
               />
@@ -266,7 +271,7 @@ export default function FilterDropdown({
         )}
 
         {/* Japanese Level Filter */}
-        <SectionHeader title="Japanese Level" section="japanese" />
+        <SectionHeader title={t("filter.japaneseLevel")} section="japanese" />
         {expandedSections.japanese && (
           <View className="flex-row flex-wrap p-4">
             {japaneseLevels.map((level) => (
@@ -298,7 +303,7 @@ export default function FilterDropdown({
         )}
 
         {/* Salary Range */}
-        <SectionHeader title="Salary Range" section="salary" />
+        <SectionHeader title={t("filter.salaryRange")} section="salary" />
         {expandedSections.salary && (
           <View className="p-4">
             <Text
@@ -313,7 +318,7 @@ export default function FilterDropdown({
                 marginBottom: 10,
               }}
             >
-              Use buttons below to adjust salary range:
+              {t("filter.adjustSalaryRange")}
             </Text>
             <View className="flex-row justify-between mb-3">
               <TouchableOpacity
@@ -377,7 +382,7 @@ export default function FilterDropdown({
         )}
 
         {/* Commuting Ease */}
-        <SectionHeader title="Commuting Ease" section="commuting" />
+        <SectionHeader title={t("filter.commutingEase")} section="commuting" />
         {expandedSections.commuting && (
           <View>
             {commutingEaseOptions.map((ease) => (
@@ -392,7 +397,7 @@ export default function FilterDropdown({
         )}
 
         {/* Rating */}
-        <SectionHeader title="Rating" section="rating" />
+        <SectionHeader title={t("filter.rating")} section="rating" />
         {expandedSections.rating && (
           <View>
             {ratingOptions.map((rating) => (
@@ -420,7 +425,7 @@ export default function FilterDropdown({
                 fontSize: 14,
               }}
             >
-              Clear All
+              {t("filter.clearAll")}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -436,7 +441,7 @@ export default function FilterDropdown({
                 fontWeight: "600",
               }}
             >
-              Apply Filters
+              {t("filter.applyFilters")}
             </Text>
           </TouchableOpacity>
         </View>

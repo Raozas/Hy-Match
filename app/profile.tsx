@@ -6,6 +6,7 @@ import TextComponent from "@/components/TextComponent";
 import TextWithIcon from "@/components/TextWithIcon";
 import VideoPickerComponent from "@/components/VideoPickerComponent";
 import WeekDays from "@/components/WeekDays";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import * as FileSystem from "expo-file-system";
 import * as Print from "expo-print";
@@ -19,11 +20,12 @@ import { databaseService, UserProfile } from "../utils/database";
 
 export default function ProfileScreen() {
   const { colors } = useTheme();
+  const { t } = useLanguage();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [profileVideo, setProfileVideo] = useState<string | null>(null);
   const [isEditable, setIsEditable] = useState<"yes" | "no">("no");
-  const [saveButtonText, setSaveButtonText] = useState("編集");
+  const [saveButtonText, setSaveButtonText] = useState(t("profile.edit"));
   const [isLoading, setIsLoading] = useState(true);
   const [pendingChanges, setPendingChanges] = useState<boolean>(false);
 
@@ -610,7 +612,7 @@ export default function ProfileScreen() {
     if (isEditable === "no") {
       // Enable editing
       setIsEditable("yes");
-      setSaveButtonText("保存");
+      setSaveButtonText(t("profile.save"));
     } else {
       // Force save any pending changes immediately
       if (saveTimeoutRef.current) {
@@ -629,14 +631,14 @@ export default function ProfileScreen() {
       }
 
       setIsEditable("no");
-      setSaveButtonText("編集");
+      setSaveButtonText(t("profile.edit"));
     }
   };
 
   const handleDownloadProfile = async () => {
     try {
       if (!userProfile) {
-        Alert.alert("Error", "No profile data to export");
+        Alert.alert(t("alert.error"), t("alert.noProfileData"));
         return;
       }
 
@@ -941,13 +943,13 @@ export default function ProfileScreen() {
           UTI: "com.adobe.pdf",
         });
       } else {
-        Alert.alert("Success", `PDF saved to: ${uri}`);
+        Alert.alert(t("alert.success"), `${t("alert.pdfSavedTo")}${uri}`);
       }
 
       console.log("PDF generated successfully:", uri);
     } catch (error) {
       console.error("Error generating PDF:", error);
-      Alert.alert("Error", "Failed to generate PDF. Please try again.");
+      Alert.alert(t("alert.error"), t("alert.pdfGenerationFailed"));
     }
   };
 
@@ -959,9 +961,9 @@ export default function ProfileScreen() {
       >
         <HeaderComponent
           leftButton="Info"
-          onLeftPress={() => alert("Show user info")}
+          onLeftPress={() => alert(t("alert.showUserInfo"))}
           rightButton="Close"
-          title="Profile"
+          title={t("header.profile")}
           onRightPress={() => console.log("Close profile")}
         />
         <ScrollView
@@ -976,7 +978,7 @@ export default function ProfileScreen() {
               type="input"
               className="w-[240px]"
               onValueChange={handleNameChange}
-              info="Enter your full name as it appears on official documents."
+              info={t("profile.info.name")}
               editable={isEditable}
             />
             <ImagePickerComponent
@@ -993,9 +995,9 @@ export default function ProfileScreen() {
           <Separator width={360} />
           <TextWithIcon
             icon="Cake"
-            text={userProfile?.age || "年齢"}
+            text={userProfile?.age || t("profile.age")}
             type="select"
-            info="Choose your age from the list below."
+            info={t("profile.info.age")}
             options={[
               "16",
               "17",
@@ -1024,7 +1026,7 @@ export default function ProfileScreen() {
             type="selectCountry"
             className="w-[240px]"
             onValueChange={handleCountryChange}
-            info="Choose your country of residence. This helps us provide location-specific information."
+            info={t("profile.info.country")}
             editable={isEditable}
           />
           <Separator width={360} />
@@ -1033,20 +1035,20 @@ export default function ProfileScreen() {
             icon="GenderMale&GenderFemale"
             type="radio"
             radioNum="3"
-            radioLabel="*icon*GenderMale|*icon*GenderFemale|*text*その他"
+            radioLabel={`*icon*GenderMale|*icon*GenderFemale|*text*${t("profile.other")}`}
             radioColor="same&#FF6B6B&#4ECDC4"
             editable={isEditable}
             onValueChange={handleGenderChange}
-            info="Select your gender"
+            info={t("profile.info.gender")}
             currentValue={userProfile?.gender}
           />
           <Separator width={360} />
           <View className="flex-row gap-[11px]">
             <TextWithIcon
               icon="HouseLine&Footprints"
-              text={userProfile?.homeStation || "自宅最寄り駅"}
+              text={userProfile?.homeStation || t("profile.homeStation")}
               type="select"
-              info="Choose your home station from the list below."
+              info={t("profile.info.homeStation")}
               options={[
                 "Shinjuku",
                 "Shibuya",
@@ -1062,7 +1064,7 @@ export default function ProfileScreen() {
               icon="Footprints"
               text={userProfile?.timeToStationFromHome || "~"}
               type="select"
-              info="Choose the number of minutes to your home station."
+              info={t("profile.info.timeToHome")}
               options={["5", "10", "15", "20", "25", "30"]}
               className="!w-[153px] !text-[14px]"
               editable={isEditable}
@@ -1073,9 +1075,9 @@ export default function ProfileScreen() {
           <View className="flex-row gap-[11px]">
             <TextWithIcon
               icon="Buildings&Footprints"
-              text={userProfile?.schoolStation || "学校最寄り駅"}
+              text={userProfile?.schoolStation || t("profile.schoolStation")}
               type="select"
-              info="Choose your school station from the list below."
+              info={t("profile.info.schoolStation")}
               options={[
                 "Shinjuku",
                 "Shibuya",
@@ -1091,7 +1093,7 @@ export default function ProfileScreen() {
               icon="Footprints"
               text={userProfile?.timeToStationFromSchool || "~"}
               type="select"
-              info="Choose the number of minutes to your school station."
+              info={t("profile.info.timeToSchool")}
               options={["5", "10", "15", "20", "25", "30"]}
               className="!w-[153px] !text-[14px]"
               onValueChange={handleTimeToStationFromSchoolChange}
@@ -1101,20 +1103,20 @@ export default function ProfileScreen() {
           <Separator width={360} />
           <TextWithIcon
             icon="CurrencyKzt"
-            text={userProfile?.postalCode || "郵便番号"}
+            text={userProfile?.postalCode || t("profile.postalCode")}
             type="input"
             className="w-[174px]"
-            info="Enter your postal code. This helps us provide location-specific information."
+            info={t("profile.info.postalCode")}
             onValueChange={handlePostalCodeChange}
             editable={isEditable}
           />
           <Separator width={360} />
           <TextWithIcon
             icon="MapPinArea"
-            text={userProfile?.prefecture || "都道府県を選んでください"}
+            text={userProfile?.prefecture || t("profile.selectPrefecture")}
             className="w-[347px]"
             type="select"
-            info="Choose your prefecture from the list below."
+            info={t("profile.info.prefecture")}
             options={
               prefectureOptions.length > 0
                 ? prefectureOptions
@@ -1126,9 +1128,9 @@ export default function ProfileScreen() {
           <Separator width={360} />
           <TextWithIcon
             icon="MapTrifold"
-            text={userProfile?.city1 || "市区町村1を選んでください"}
+            text={userProfile?.city1 || t("profile.selectCity1")}
             className="w-[347px]"
-            info="Select your city or town from the list below."
+            info={t("profile.info.city")}
             type="select"
             options={
               cityOptions.length > 0
@@ -1141,8 +1143,8 @@ export default function ProfileScreen() {
           <Separator width={360} />
           <TextWithIcon
             icon="MapTrifold"
-            text={userProfile?.city2 || "市区町村2を選んでください"}
-            info="Select your city or town from the list below."
+            text={userProfile?.city2 || t("profile.selectCity2")}
+            info={t("profile.info.city")}
             className="w-[347px]"
             type="select"
             options={
@@ -1156,30 +1158,30 @@ export default function ProfileScreen() {
           <Separator width={360} />
           <TextWithIcon
             icon="BuildingApartment"
-            text={userProfile?.streetAddress || "番地・建物名"}
+            text={userProfile?.streetAddress || t("profile.buildingName")}
             className="w-[347px]"
             type="input"
-            info="Enter your street address, including building name if applicable."
+            info={t("profile.info.streetAddress")}
             onValueChange={handleStreetAddressChange}
             editable={isEditable}
           />
           <Separator width={360} />
           <TextWithIcon
             icon="Numpad"
-            text={userProfile?.phoneNumber || "電話番号"}
+            text={userProfile?.phoneNumber || t("profile.phoneNumber")}
             className="w-[347px]"
             type="input"
-            info="Enter your phone number."
+            info={t("profile.info.phoneNumber")}
             onValueChange={handlePhoneNumberChange}
             editable={isEditable}
           />
           <Separator width={360} />
           <TextWithIcon
             icon="At"
-            text={userProfile?.email || "メールアドレス"}
+            text={userProfile?.email || t("profile.email")}
             className="w-[347px]"
             type="input"
-            info="Enter your email address for account verification and notifications."
+            info={t("profile.info.email")}
             onValueChange={handleEmailChange}
             editable={isEditable}
           />
@@ -1187,19 +1189,21 @@ export default function ProfileScreen() {
           <View className="flex-row gap-[11px]">
             <TextWithIcon
               icon="Certificate"
-              text={userProfile?.visaType || "ビザの種類"}
+              text={userProfile?.visaType || t("profile.visaType")}
               type="select"
-              info="Choose your visa type from the list below."
+              info={t("profile.info.visaType")}
               options={["Student", "Work", "Tourist", "Other"]}
               className="!w-[183px] !text-[12px]"
               onValueChange={handleVisaTypeChange}
               editable={isEditable}
             />
             <TextComponent
-              text={userProfile?.visaValidityPeriod || "有効期間"}
+              text={
+                userProfile?.visaValidityPeriod || t("profile.validityPeriod")
+              }
               type="input"
               className="!w-[153px] !text-[14px]"
-              label="有効期間"
+              label={t("profile.validityPeriod")}
               onValueChange={handleVisaValidityPeriodChange}
               editable={isEditable}
             />
@@ -1208,9 +1212,11 @@ export default function ProfileScreen() {
           <View className="flex-row gap-[11px]">
             <TextWithIcon
               icon="Newspaper"
-              text={userProfile?.residenceStatus || "在留資格"}
+              text={
+                userProfile?.residenceStatus || t("profile.residenceStatus")
+              }
               type="select"
-              info="Choose your Status of residence from the list below."
+              info={t("profile.info.residenceStatus")}
               options={["Student", "Work", "Tourist", "Other"]}
               className="!w-[183px] !text-[12px]"
               onValueChange={handleResidenceStatusChange}
@@ -1219,11 +1225,11 @@ export default function ProfileScreen() {
             <TextComponent
               text={
                 userProfile?.residenceStatusChangeSchedule ||
-                "在留資格の変更予定"
+                t("profile.changeSchedule")
               }
               type="input"
               className="!w-[153px] !text-[14px]"
-              label="変更予定"
+              label={t("profile.changeSchedule")}
               onValueChange={handleResidenceStatusChangeScheduleChange}
               editable={isEditable}
             />
@@ -1231,9 +1237,9 @@ export default function ProfileScreen() {
           <Separator width={360} />
           <TextWithIcon
             icon="ChatsCircle"
-            text={userProfile?.japaneseLevel || "日本語レベル"}
+            text={userProfile?.japaneseLevel || t("profile.japaneseLevel")}
             type="select"
-            info="Choose your Japanese language proficiency level from the list below."
+            info={t("profile.info.japaneseLevel")}
             options={["N5", "N4", "N3", "N2", "N1"]}
             className="!w-[183px] !text-[12px]"
             onValueChange={handleJapaneseLevelChange}
@@ -1246,15 +1252,17 @@ export default function ProfileScreen() {
             useHours="no"
             editable={isEditable}
             onAirChange={handleAvailableDaysChange}
-            info="Select the days you are available to work. You can choose multiple days."
+            info={t("profile.info.availableDays")}
           />
           <Separator width={360} />
           <View className="flex-row gap-[11px]">
             <TextWithIcon
               icon="Clock"
-              text={userProfile?.availableFromTime || "何時から"}
+              text={
+                userProfile?.availableFromTime || t("profile.availableFromTime")
+              }
               type="select"
-              info="Choose your available from time."
+              info={t("profile.info.availableFromTime")}
               options={[
                 "6:00",
                 "7:00",
@@ -1278,7 +1286,9 @@ export default function ProfileScreen() {
             />
 
             <TextComponent
-              text={userProfile?.availableToTime || "何時まで"}
+              text={
+                userProfile?.availableToTime || t("profile.availableToTime")
+              }
               type="select"
               className="!w-[143px] !text-[12px]"
               options={[
@@ -1308,9 +1318,11 @@ export default function ProfileScreen() {
           <Separator width={360} />
           <TextWithIcon
             icon="Briefcase"
-            text={userProfile?.currentOccupation || "現在の職業/学生"}
+            text={
+              userProfile?.currentOccupation || t("profile.currentOccupation")
+            }
             type="input"
-            info="Enter your current occupation or student status."
+            info={t("profile.info.currentOccupation")}
             className="!w-[347px] !text-[16px]"
             onValueChange={handleCurrentOccupationChange}
             editable={isEditable}
@@ -1318,9 +1330,9 @@ export default function ProfileScreen() {
           <Separator width={360} />
           <TextWithIcon
             icon="Bank"
-            text={userProfile?.desiredJobType || "希望の職種"}
+            text={userProfile?.desiredJobType || t("profile.desiredJobType")}
             type="input"
-            info="Enter your desired job type."
+            info={t("profile.info.desiredJobType")}
             className="!w-[347px] !text-[16px]"
             onValueChange={handleDesiredJobTypeChange}
             editable={isEditable}
@@ -1328,9 +1340,9 @@ export default function ProfileScreen() {
           <Separator width={360} />
           <TextWithIcon
             icon="Table"
-            text={userProfile?.workHistory || "過去の職歴・バイト歴"}
+            text={userProfile?.workHistory || t("profile.workHistory")}
             type="input"
-            info="Enter your work history and part-time job experience."
+            info={t("profile.info.workHistory")}
             className="!w-[347px] !text-[16px]"
             onValueChange={handleWorkHistoryChange}
             editable={isEditable}

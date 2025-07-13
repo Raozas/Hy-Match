@@ -1,6 +1,7 @@
 import { JobData } from "@/components/CardComponent";
 import HeaderComponent from "@/components/HeaderComponent";
 import ListComponent, { ListComponentRef } from "@/components/ListComponent";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import jobData from "@/data/jobData.json";
 import React, { useEffect, useRef, useState } from "react";
@@ -10,6 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function TabTwoScreen() {
   const { colors } = useTheme();
+  const { t } = useLanguage();
   const [refreshing, setRefreshing] = useState(false);
   const [jobs, setJobs] = useState<JobData[]>([]);
   const listComponentRef = useRef<ListComponentRef>(null);
@@ -50,7 +52,7 @@ export default function TabTwoScreen() {
       <SafeAreaView style={{ backgroundColor: colors.background, flex: 1 }}>
         <HeaderComponent
           leftButton="List"
-          title="選択した仕事"
+          title={t("header.selectedJobs")}
           onLeftPress={() => console.log("List pressed")}
         />
         <ListComponent

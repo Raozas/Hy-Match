@@ -2,6 +2,7 @@ import { JobData } from "@/components/CardComponent";
 import FilterDropdown, { FilterOptions } from "@/components/FilterDropdown";
 import HeaderComponent from "@/components/HeaderComponent";
 import SwipeableCard from "@/components/SwipeableCard";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Heart, Trash } from "phosphor-react-native";
 import React, { useEffect, useState } from "react";
@@ -13,6 +14,7 @@ import "../../global.css";
 
 export default function HomeScreen() {
   const { colors } = useTheme();
+  const { t } = useLanguage();
 
   const jobData = jobDataJson as { jobs: JobData[] };
   const [jobs, setJobs] = useState<JobData[]>([]);
@@ -169,7 +171,7 @@ export default function HomeScreen() {
       <SafeAreaView style={{ backgroundColor: colors.background, flex: 1 }}>
         <HeaderComponent
           leftButton="List"
-          title="仕事一覧"
+          title={t("header.jobList")}
           rightButton="Filter"
           onLeftPress={() => console.log("List pressed")}
           onRightPress={() => {
@@ -178,7 +180,7 @@ export default function HomeScreen() {
           }}
         />
 
-        <View className="flex-1 items-center justify-center mt-[-40px]">
+        <View className="flex-1 items-center justify-center">
           {currentJob ? (
             <SwipeableCard
               jobData={currentJob}
@@ -192,7 +194,7 @@ export default function HomeScreen() {
               <Text
                 style={{ color: colors.text, fontSize: 18, fontWeight: "600" }}
               >
-                すべての仕事を確認しました！
+                {t("home.allJobsCompleted")}
               </Text>
               <Text
                 style={{
@@ -201,7 +203,7 @@ export default function HomeScreen() {
                   marginTop: 8,
                 }}
               >
-                新しい仕事が追加されるまでお待ちください
+                {t("home.waitForNewJobs")}
               </Text>
             </View>
           )}

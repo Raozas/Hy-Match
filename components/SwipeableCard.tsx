@@ -1,6 +1,7 @@
 import { Check, X } from "phosphor-react-native";
 import React, { useRef, useState } from "react";
 import { Animated, Dimensions, PanResponder, Text, View } from "react-native";
+import { useLanguage } from "../contexts/LanguageContext";
 import { useTheme } from "../contexts/ThemeContext";
 import CardComponent, { JobData } from "./CardComponent";
 
@@ -23,6 +24,7 @@ const SwipeableCard = ({
   className,
 }: SwipeableCardProps) => {
   const { colors } = useTheme();
+  const { t } = useLanguage();
   const pan = useRef(new Animated.ValueXY()).current;
   const [showStamp, setShowStamp] = useState<"refuse" | "choose" | null>(null);
 
@@ -116,7 +118,7 @@ const SwipeableCard = ({
     const isChoose = showStamp === "choose";
     const stampColor = isChoose ? "#4CAF50" : "#F44336";
     const StampIcon = isChoose ? Check : X;
-    const stampText = isChoose ? "選択" : "拒否";
+    const stampText = isChoose ? t("swipe.choose") : t("swipe.refuse");
 
     return (
       <View
