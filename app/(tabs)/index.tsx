@@ -1,29 +1,44 @@
 import { JobData } from "@/components/CardComponent";
+import ContactModal from "@/components/ContactModal";
+import { CustomBottomNav } from "@/components/CustomBottomNav";
 import FilterDropdown, { FilterOptions } from "@/components/FilterDropdown";
 import HeaderComponent from "@/components/HeaderComponent";
 import SwipeableCard from "@/components/SwipeableCard";
+import { useJobs } from "@/contexts/JobContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Heart, Trash } from "phosphor-react-native";
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import {
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
-import jobDataJson from "../../data/jobData.json";
 import "../../global.css";
 
 export default function HomeScreen() {
   const { colors } = useTheme();
   const { t } = useLanguage();
+  const {
+    getPendingJobs,
+    updateJobStatus,
+    jobs,
+    isLoading,
+    resetAllJobsToPending,
+  } = useJobs();
 
-  const jobData = jobDataJson as { jobs: JobData[] };
-  const [jobs, setJobs] = useState<JobData[]>([]);
   const [filteredJobs, setFilteredJobs] = useState<JobData[]>([]);
   const [currentJobIndex, setCurrentJobIndex] = useState(0);
   const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(
     null
   );
   const [filterVisible, setFilterVisible] = useState(false);
+  const [contactModalVisible, setContactModalVisible] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [currentFilters, setCurrentFilters] = useState<FilterOptions>({
     sortBy: "",
     professions: [],
@@ -34,21 +49,28 @@ export default function HomeScreen() {
   });
 
   useEffect(() => {
-    // Simple initialization with JSON data
-    console.log("Loading jobs from JSON...");
-    setJobs(jobData.jobs);
-    console.log(`Loaded ${jobData.jobs.length} jobs`);
-  }, []);
+    if (!isLoading) {
+      applyFiltersToJobs();
+    }
+  }, [currentFilters, isLoading]);
 
+  // Load jobs on initial mount
   useEffect(() => {
-    applyFiltersToJobs();
-  }, [jobs, currentFilters]);
+    if (!isLoading && filteredJobs.length === 0) {
+      applyFiltersToJobs();
+    }
+  }, [isLoading]);
+
+  // Manage currentJobIndex when filteredJobs changes
+  useEffect(() => {
+    if (currentJobIndex >= filteredJobs.length && filteredJobs.length > 0) {
+      setCurrentJobIndex(0);
+    }
+  }, [filteredJobs, currentJobIndex]);
 
   const applyFiltersToJobs = () => {
-    let filtered = [...jobs];
-
-    // Filter to only show pending jobs (not already swiped)
-    filtered = filtered.filter((job) => job.status === "pending");
+    // Get pending jobs from context
+    let filtered = getPendingJobs();
 
     // Filter by professions
     if (currentFilters.professions.length > 0) {
@@ -132,31 +154,57 @@ export default function HomeScreen() {
     setCurrentFilters(filters);
   };
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      // Reset all jobs to pending status (this fetches fresh jobs)
+      await resetAllJobsToPending();
+
+      // Reset filters to default
+      setCurrentFilters({
+        sortBy: "",
+        professions: [],
+        japaneseLevel: [],
+        salaryRange: [900, 1800],
+        commutingEase: [],
+        rating: [],
+      });
+
+      // Reapply filters to refresh the job list
+      await new Promise((resolve) => setTimeout(resolve, 300)); // Small delay for better UX
+      applyFiltersToJobs();
+
+      // Reset current job index
+      setCurrentJobIndex(0);
+      setSwipeDirection(null);
+    } catch (error) {
+      console.error("Error refreshing jobs:", error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   const handleSwipeLeft = async (swipedJob: JobData) => {
-    console.log(`Refused job ${swipedJob.id}, moving to next`);
+    // Update job status in context
+    await updateJobStatus(swipedJob.id.toString(), "refusal");
 
-    // Update local state only (no database)
-    const updatedJobs = jobs.map((job) =>
-      job.id === swipedJob.id ? { ...job, status: "refusal" as const } : job
+    // Remove job from filtered array immediately
+    setFilteredJobs((prev) =>
+      prev.filter((job) => job.id.toString() !== swipedJob.id.toString())
     );
-    setJobs(updatedJobs);
 
-    const newIndex = currentJobIndex + 1;
-    setCurrentJobIndex(newIndex);
     setSwipeDirection(null);
   };
 
   const handleSwipeRight = async (swipedJob: JobData) => {
-    console.log(`Chose job ${swipedJob.id}, moving to next`);
+    // Update job status in context
+    await updateJobStatus(swipedJob.id.toString(), "choosed");
 
-    // Update local state only (no database)
-    const updatedJobs = jobs.map((job) =>
-      job.id === swipedJob.id ? { ...job, status: "choosed" as const } : job
+    // Remove job from filtered array immediately
+    setFilteredJobs((prev) =>
+      prev.filter((job) => job.id.toString() !== swipedJob.id.toString())
     );
-    setJobs(updatedJobs);
 
-    const newIndex = currentJobIndex + 1;
-    setCurrentJobIndex(newIndex);
     setSwipeDirection(null);
   };
 
@@ -170,44 +218,101 @@ export default function HomeScreen() {
     <GestureHandlerRootView className="flex-1">
       <SafeAreaView style={{ backgroundColor: colors.background, flex: 1 }}>
         <HeaderComponent
-          leftButton="List"
           title={t("header.jobList")}
+          leftButton="List"
           rightButton="Filter"
-          onLeftPress={() => console.log("List pressed")}
-          onRightPress={() => {
-            console.log("Filter button pressed");
-            setFilterVisible(true);
-          }}
+          onRightPress={() => setFilterVisible(true)}
         />
 
-        <View className="flex-1 items-center justify-center">
-          {currentJob ? (
-            <SwipeableCard
-              jobData={currentJob}
-              onSwipeLeft={handleSwipeLeft}
-              onSwipeRight={handleSwipeRight}
-              onSwipeStateChange={handleSwipeStateChange}
-              className=""
+        <ScrollView
+          contentContainerStyle={{ flex: 1, padding: 0 }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={[colors.primary]} // Android
+              tintColor={colors.primary} // iOS
+              title={t("common.pullToRefresh") || "Pull to refresh"}
+              titleColor={colors.textSecondary}
             />
-          ) : (
-            <View className="items-center">
-              <Text
-                style={{ color: colors.text, fontSize: 18, fontWeight: "600" }}
-              >
-                {t("home.allJobsCompleted")}
-              </Text>
-              <Text
-                style={{
-                  color: colors.textSecondary,
-                  fontSize: 14,
-                  marginTop: 8,
-                }}
-              >
-                {t("home.waitForNewJobs")}
-              </Text>
+          }
+        >
+          <View className="flex-1 items-center justify-center absolute　left-4">
+            {currentJob ? (
+              <SwipeableCard
+                key={`${currentJob.id}-${currentJobIndex}`}
+                jobData={currentJob}
+                onSwipeLeft={handleSwipeLeft}
+                onSwipeRight={handleSwipeRight}
+                onSwipeStateChange={handleSwipeStateChange}
+                className=""
+              />
+            ) : (
+              <View className="items-center">
+                <Text
+                  style={{
+                    color: colors.text,
+                    fontSize: 18,
+                    fontWeight: "600",
+                  }}
+                >
+                  {t("home.allJobsCompleted")}
+                </Text>
+                <Text
+                  style={{
+                    color: colors.textSecondary,
+                    fontSize: 14,
+                    marginTop: 8,
+                  }}
+                >
+                  {t("home.waitForNewJobs")}
+                </Text>
+              </View>
+            )}
+          </View>
+
+          {/* Swipe Instructions */}
+          {currentJob && (
+            <View className="px-4" style={{ marginBottom: 20, bottom: 20, position: "absolute", left: 0, right: 0 }}>
+              <View className="flex-row justify-between items-center">
+                <View
+                  className="h-[48px] w-[48px] rounded-full items-center justify-center"
+                  style={{
+                    backgroundColor:
+                      swipeDirection === "left" ? "#B9BFFF80" : "#F5F5F580",
+                  }}
+                >
+                  <Trash
+                    size={32}
+                    color={
+                      swipeDirection === "left"
+                        ? "#642B9D"
+                        : colors.textSecondary
+                    }
+                    weight="fill"
+                  />
+                </View>
+                <View
+                  className="h-[48px] w-[48px] rounded-full items-center justify-center"
+                  style={{
+                    backgroundColor:
+                      swipeDirection === "right" ? "#FFD3D3" : "#F5F5F580",
+                  }}
+                >
+                  <Heart
+                    size={32}
+                    color={
+                      swipeDirection === "right"
+                        ? "#FF6060"
+                        : colors.textSecondary
+                    }
+                    weight="fill"
+                  />
+                </View>
+              </View>
             </View>
           )}
-        </View>
+        </ScrollView>
 
         <FilterDropdown
           visible={filterVisible}
@@ -216,45 +321,25 @@ export default function HomeScreen() {
           jobs={jobs}
         />
 
-        {/* Swipe Instructions */}
-        {currentJob && (
-          <View className="px-4" style={{ marginBottom: 20 }}>
-            <View className="flex-row justify-between items-center">
-              <View
-                className="h-[48px] w-[48px] rounded-full items-center justify-center"
-                style={{
-                  backgroundColor:
-                    swipeDirection === "left" ? "#B9BFFF80" : "#F5F5F580",
-                }}
-              >
-                <Trash
-                  size={32}
-                  color={
-                    swipeDirection === "left" ? "#642B9D" : colors.textSecondary
-                  }
-                  weight="fill"
-                />
-              </View>
-              <View
-                className="h-[48px] w-[48px] rounded-full items-center justify-center"
-                style={{
-                  backgroundColor:
-                    swipeDirection === "right" ? "#FFD3D3" : "#F5F5F580",
-                }}
-              >
-                <Heart
-                  size={32}
-                  color={
-                    swipeDirection === "right"
-                      ? "#FF6060"
-                      : colors.textSecondary
-                  }
-                  weight="fill"
-                />
-              </View>
-            </View>
-          </View>
-        )}
+        <ContactModal
+          visible={contactModalVisible}
+          onClose={() => setContactModalVisible(false)}
+          jobTitle={currentJob?.position}
+          contactInfo={{
+            phone: currentJob
+              ? `+81-3-${Math.floor(Math.random() * 9000) + 1000}-${Math.floor(Math.random() * 9000) + 1000}`
+              : "+81-3-1234-5678",
+            email: currentJob
+              ? `hr@${currentJob.company
+                  .replace(/株式会社|有限会社/g, "")
+                  .toLowerCase()
+                  .replace(/\s+/g, "")}.co.jp`
+              : "contact@company.co.jp",
+            company: currentJob?.company || "Company",
+          }}
+        />
+
+        <CustomBottomNav onContactPress={() => setContactModalVisible(true)} />
       </SafeAreaView>
     </GestureHandlerRootView>
   );

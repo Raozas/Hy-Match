@@ -40,9 +40,6 @@ const ListComponent = forwardRef<ListComponentRef, ListComponentProps>(
   ) => {
     const { colors } = useTheme();
     const { t } = useLanguage();
-    const [selectedFilter, setSelectedFilter] = useState<
-      "all" | "pending" | "choosed" | "refusal"
-    >(filterStatus);
 
     const [displayJobs, setDisplayJobs] = useState<JobData[]>(jobs);
     const [selectedJob, setSelectedJob] = useState<JobData | null>(null);
@@ -56,16 +53,12 @@ const ListComponent = forwardRef<ListComponentRef, ListComponentProps>(
 
     useImperativeHandle(ref, () => ({
       refreshData: async () => {
-        // Since we're using props, just reset the filter
-        setSelectedFilter("all");
+        // Since we're using props, no additional refresh needed
       },
     }));
 
-    // Filter jobs based on selected filter
-    const filteredJobs = displayJobs.filter((job) => {
-      if (selectedFilter === "all") return true;
-      return job.status === selectedFilter;
-    });
+    // Use all jobs (no filtering)
+    const filteredJobs = displayJobs;
 
     const handleStatusChange = (
       jobId: string,
@@ -119,42 +112,9 @@ const ListComponent = forwardRef<ListComponentRef, ListComponentProps>(
       }
     };
 
-    const getStatusCount = (
-      status: "all" | "pending" | "choosed" | "refusal"
-    ) => {
-      if (status === "all") return displayJobs.length;
-      return displayJobs.filter((job) => job.status === status).length;
+    const getStatusCount = () => {
+      return displayJobs.length;
     };
-
-    const FilterButton = ({
-      filter,
-      label,
-    }: {
-      filter: typeof selectedFilter;
-      label: string;
-    }) => (
-      <TouchableOpacity
-        onPress={() => setSelectedFilter(filter)}
-        className={`px-4 py-2 rounded-full border ${
-          selectedFilter === filter ? "border-blue-500" : "border-gray-300"
-        }`}
-        style={{
-          backgroundColor:
-            selectedFilter === filter ? colors.primary : colors.surface,
-          borderColor:
-            selectedFilter === filter ? colors.primary : colors.border,
-        }}
-      >
-        <Text
-          style={{
-            color: selectedFilter === filter ? "white" : colors.text,
-            fontWeight: selectedFilter === filter ? "600" : "400",
-          }}
-        >
-          {label} ({getStatusCount(filter)})
-        </Text>
-      </TouchableOpacity>
-    );
 
     return (
       <SafeAreaView style={{ backgroundColor: colors.background, flex: 1 }}>
@@ -169,40 +129,12 @@ const ListComponent = forwardRef<ListComponentRef, ListComponentProps>(
         )}
 
         <View className="flex-1 px-4 mt-[-50px]">
-          <ScrollView
-            horizontal={true}
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{
-              paddingVertical: 16,
-              paddingHorizontal: 4,
-            }}
-            style={{ flexGrow: 0 }}
-          >
-            <View className="flex-row gap-3">
-              <FilterButton filter="all" label={t("filter.all")} />
-              <FilterButton filter="pending" label={t("filter.pending")} />
-              <FilterButton filter="choosed" label={t("filter.chosen")} />
-              <FilterButton filter="refusal" label={t("filter.refused")} />
-            </View>
-          </ScrollView>
-
-          <View className="flex-row items-center justify-between mb-4">
+          <View className="flex-row items-center justify-between mb-4 mt-4">
             <Text
               style={{ color: colors.text, fontSize: 16, fontWeight: "600" }}
             >
               {filteredJobs.length} {t("list.jobsCount")}
             </Text>
-            <View className="flex-row items-center gap-2">
-              <View
-                className="w-3 h-3 rounded-full"
-                style={{ backgroundColor: getStatusColor(selectedFilter) }}
-              />
-              <Text style={{ color: colors.textSecondary, fontSize: 14 }}>
-                {selectedFilter === "all"
-                  ? t("list.allStatuses")
-                  : getStatusText(selectedFilter)}
-              </Text>
-            </View>
           </View>
 
           <ScrollView
@@ -256,9 +188,7 @@ const ListComponent = forwardRef<ListComponentRef, ListComponentProps>(
                     textAlign: "center",
                   }}
                 >
-                  {selectedFilter === "all"
-                    ? t("list.noJobsFound")
-                    : `${t("list.noJobsForStatus")}${getStatusText(selectedFilter)}`}
+                  {t("list.noJobsFound")}
                 </Text>
               </View>
             )}

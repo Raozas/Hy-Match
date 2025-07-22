@@ -14,36 +14,48 @@ export interface ThemeColors {
   error: string;
   success: string;
   warning: string;
+  tabBackground?: string; 
+  headerBtn?: string;
+  iconSecondary?: string; 
+  tabIconBackground?: string;
 }
 
 export const lightTheme: ThemeColors = {
-  background: "#FFFFFF",
+  background: "#F9EFE7",
   surface: "#F8F9FA",
+  headerBtn: '#C39D71',
   primary: "#48A6AC",
   secondary: "#555AE9",
   text: "#1F2937",
   textSecondary: "#6B7280",
+  iconSecondary: "#EDEBE7",
   border: "#E5E7EB",
   card: "#FFFFFF",
   accent: "#10B981",
   error: "#EF4444",
   success: "#10B981",
   warning: "#F59E0B",
+  tabBackground: "#C39D71", 
+  tabIconBackground: "#70ADD4", 
 };
 
 export const darkTheme: ThemeColors = {
   background: "#111827",
   surface: "#1F2937",
+  headerBtn:"#1F2937",
   primary: "#60C7D2",
   secondary: "#6366F1",
   text: "#F9FAFB",
   textSecondary: "#D1D5DB",
+  iconSecondary: "#D1D5DB",
   border: "#374151",
   card: "#1F2937",
   accent: "#34D399",
   error: "#F87171",
   success: "#34D399",
   warning: "#FBBF24",
+  tabBackground: "#111827",
+  tabIconBackground: "#1F2937",
 };
 
 interface ThemeContextType {

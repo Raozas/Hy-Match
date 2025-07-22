@@ -585,7 +585,7 @@ const TextWithIcon = ({
     <View className={`flex-row items-center gap-3 ${className || ""}`}>
       <TouchableOpacity
         onPress={handleIconAreaPress}
-        className="h-[48px] w-[48px] rounded-full bg-[#DAE3FF] items-center justify-center p-0 relative"
+        className="h-[48px] w-[48px] rounded-full bg-[#EBDFCC] items-center justify-center p-0 relative"
         activeOpacity={!infoVisible && info ? 0.3 : 1}
       >
         {isMultipleIcons ? (

@@ -10,6 +10,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import * as FileSystem from "expo-file-system";
 import * as Print from "expo-print";
+import { router } from "expo-router";
 import * as Sharing from "expo-sharing";
 import { DownloadSimple } from "phosphor-react-native";
 import React, { useEffect, useState } from "react";
@@ -39,7 +40,6 @@ export default function ProfileScreen() {
   useEffect(() => {
     loadUserProfile();
   }, []);
-
   const loadUserProfile = async () => {
     try {
       setIsLoading(true);
@@ -53,6 +53,14 @@ export default function ProfileScreen() {
         setProfileVideo(profile.profileVideo || null);
         // Only update location options on initial load
         updateLocationOptions(profile.country, profile.prefecture);
+      } else {
+        // Create a default profile if none exists
+        const defaultProfile: UserProfile = {
+          name: "Default User",
+          age: "20",
+          country: "Japan",
+        };
+        setUserProfile(defaultProfile);
       }
     } catch (error) {
       console.error("Error loading user profile:", error);
@@ -964,7 +972,7 @@ export default function ProfileScreen() {
           onLeftPress={() => alert(t("alert.showUserInfo"))}
           rightButton="Close"
           title={t("header.profile")}
-          onRightPress={() => console.log("Close profile")}
+          onRightPress={() => router.back()}
         />
         <ScrollView
           className="flex-1 px-4 mt-[-25px] py-1"

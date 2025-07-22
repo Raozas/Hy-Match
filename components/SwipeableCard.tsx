@@ -128,28 +128,23 @@ const SwipeableCard = ({
           right: isChoose ? undefined : 20,
           left: isChoose ? 20 : undefined,
           zIndex: 10,
-          backgroundColor: stampColor,
+          backgroundColor: "transparent",
+          borderColor: stampColor,
+          borderWidth: 10,
           borderRadius: 50,
           width: 100,
           height: 100,
           justifyContent: "center",
           alignItems: "center",
           transform: [{ rotate: isChoose ? "-15deg" : "15deg" }],
-          shadowColor: "#000",
-          shadowOffset: {
-            width: 0,
-            height: 2,
-          },
-          shadowOpacity: 0.25,
-          shadowRadius: 3.84,
-          elevation: 5,
+    
         }}
       >
-        <StampIcon size={40} color="white" weight="bold" />
+        {/* <StampIcon size={40} color={stampColor} weight="bold" /> */}
         <Text
           style={{
-            color: "white",
-            fontSize: 12,
+            color: stampColor,
+            fontSize: 20,
             fontWeight: "bold",
             marginTop: 4,
           }}

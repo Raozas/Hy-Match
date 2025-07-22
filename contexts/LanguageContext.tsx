@@ -18,11 +18,18 @@ const translations = {
     // Header
     "header.jobList": "Job List",
     "header.selectedJobs": "Selected Jobs",
+    "header.refusedJobs": "Refused Jobs",
+    "header.chosenJobs": "Chosen Jobs",
     "header.profile": "Profile",
+    "header.themeMode": "Theme Mode",
+    "header.language": "Language",
 
     // Home Screen
     "home.allJobsCompleted": "All jobs checked!",
     "home.waitForNewJobs": "Please wait for new jobs to be added",
+
+    // Common
+    "common.pullToRefresh": "Pull to refresh",
 
     // Filter
     "filter.all": "All",
@@ -144,16 +151,31 @@ const translations = {
     "alert.pdfSavedTo": "PDF saved to: ",
     "alert.pdfGenerationFailed": "Failed to generate PDF. Please try again.",
     "alert.showUserInfo": "Show user info",
+
+    // Contact Modal
+    "contact.howToContact": "How would you like to contact?",
+    "contact.phone": "Phone Call",
+    "contact.email": "Email",
+    "contact.chat": "Chat",
+    "contact.job": "Job",
+    "contact.emailSubject": "Regarding:",
   },
   ja: {
     // Header
     "header.jobList": "仕事一覧",
     "header.selectedJobs": "選択した仕事",
+    "header.refusedJobs": "拒否した仕事",
+    "header.chosenJobs": "選択した仕事",
     "header.profile": "プロフィール",
+    "header.themeMode": "テーマモード",
+    "header.language": "言語",
 
     // Home Screen
     "home.allJobsCompleted": "すべての仕事を確認しました！",
     "home.waitForNewJobs": "新しい仕事が追加されるまでお待ちください",
+
+    // Common
+    "common.pullToRefresh": "引っ張って更新",
 
     // Filter
     "filter.all": "全て",
@@ -272,16 +294,31 @@ const translations = {
     "alert.pdfGenerationFailed":
       "PDFの生成に失敗しました。もう一度お試しください。",
     "alert.showUserInfo": "ユーザー情報を表示",
+
+    // Contact Modal
+    "contact.howToContact": "どのように連絡しますか？",
+    "contact.phone": "電話",
+    "contact.email": "メール",
+    "contact.chat": "チャット",
+    "contact.job": "仕事",
+    "contact.emailSubject": "件名：",
   },
   uz: {
     // Header
     "header.jobList": "Ish ro'yxati",
     "header.selectedJobs": "Tanlangan ishlar",
+    "header.refusedJobs": "Rad etilgan ishlar",
+    "header.chosenJobs": "Tanlangan ishlar",
     "header.profile": "Profil",
+    "header.themeMode": "Tema rejimi",
+    "header.language": "Til",
 
     // Home Screen
     "home.allJobsCompleted": "Barcha ishlar ko'rib chiqildi!",
     "home.waitForNewJobs": "Yangi ishlar qo'shilguncha kuting",
+
+    // Common
+    "common.pullToRefresh": "Yangilash uchun torting",
 
     // Filter
     "filter.all": "Hammasi",
@@ -407,6 +444,14 @@ const translations = {
     "alert.pdfSavedTo": "PDF saqlandi: ",
     "alert.pdfGenerationFailed": "PDF yaratishda xatolik. Yana urinib ko'ring.",
     "alert.showUserInfo": "Foydalanuvchi ma'lumotlarini ko'rsatish",
+
+    // Contact Modal
+    "contact.howToContact": "Qanday aloqa qilmoqchisiz?",
+    "contact.phone": "Telefon qo'ng'irog'i",
+    "contact.email": "Email",
+    "contact.chat": "Chat",
+    "contact.job": "Ish",
+    "contact.emailSubject": "Mavzu:",
   },
 };
 

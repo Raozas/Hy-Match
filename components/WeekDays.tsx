@@ -78,7 +78,7 @@ const WeekDays = ({
 
   const renderDay = (day: string) => {
     const isOnAir = onAirDays.includes(day);
-    const bgColor = isOnAir ? "bg-[#E9A6A6]" : "bg-[#C7C7C7]";
+    const bgColor = isOnAir ? "bg-[#E99C4B]" : "bg-[#A5A7A4]";
 
     const dayContent = (
       <View
@@ -106,7 +106,7 @@ const WeekDays = ({
   return (
     <View className="flex-row items-center gap-4 w-full">
       <TouchableWithoutFeedback onPress={handleIconAreaPress}>
-        <View className="h-[48px] w-[48px] rounded-full bg-[#DAE3FF] items-center justify-center p-0 relative">
+        <View className="h-[48px] w-[48px] rounded-full bg-[#EBDFCC] items-center justify-center p-0 relative">
           <CalendarDots size={32} color="#002775" weight="duotone" />
           {info && infoVisible && (
             <TouchableOpacity

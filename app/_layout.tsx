@@ -3,6 +3,7 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
+import { JobProvider } from "../contexts/JobContext";
 import { LanguageProvider } from "../contexts/LanguageContext";
 import { ThemeProvider, useTheme } from "../contexts/ThemeContext";
 import "../global.css";
@@ -21,12 +22,14 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <LanguageProvider>
         <ThemeProvider>
-          <StatusBarController />
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="+not-found" />
-            <Stack.Screen name="profile" options={{ headerShown: false }} />
-          </Stack>
+          <JobProvider>
+            <StatusBarController />
+            <Stack>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="+not-found" />
+              <Stack.Screen name="profile" options={{ headerShown: false }} />
+            </Stack>
+          </JobProvider>
         </ThemeProvider>
       </LanguageProvider>
     </GestureHandlerRootView>

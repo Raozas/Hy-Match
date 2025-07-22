@@ -1,0 +1,57 @@
+import { JobData } from "@/components/CardComponent";
+import HeaderComponent from "@/components/HeaderComponent";
+import ListComponent from "@/components/ListComponent";
+import { useJobs } from "@/contexts/JobContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useTheme } from "@/contexts/ThemeContext";
+import { router, useFocusEffect } from "expo-router";
+import React, { useCallback, useState } from "react";
+import { View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+export default function ChosenJobsScreen() {
+  const { colors } = useTheme();
+  const { t } = useLanguage();
+  const { getJobsByStatus, updateJobStatus, jobs } = useJobs();
+  const [chosenJobs, setChosenJobs] = useState<JobData[]>([]);
+
+  // Refresh jobs when screen comes into focus or when jobs change
+  useFocusEffect(
+    useCallback(() => {
+      const chosen = getJobsByStatus("choosed");
+      setChosenJobs(chosen);
+    }, [getJobsByStatus, jobs])
+  );
+
+  const handleJobStatusChange = async (
+    jobId: string,
+    newStatus: JobData["status"]
+  ) => {
+    // Update job status using context
+    await updateJobStatus(jobId, newStatus);
+
+    // Update local state to reflect changes
+    const updatedJobs = chosenJobs.filter(
+      (job) => job.id.toString() !== jobId || newStatus === "choosed"
+    );
+    setChosenJobs(updatedJobs);
+  };
+
+  return (
+    <SafeAreaView style={{ backgroundColor: colors.background, flex: 1 }}>
+      <HeaderComponent
+        leftButton="Back"
+        title={t("header.chosenJobs")}
+        onLeftPress={() => router.navigate("/(tabs)")}
+      />
+
+      <View className="flex-1">
+        <ListComponent
+          jobs={chosenJobs}
+          filterStatus="choosed"
+          onJobStatusChange={handleJobStatusChange}
+        />
+      </View>
+    </SafeAreaView>
+  );
+}
