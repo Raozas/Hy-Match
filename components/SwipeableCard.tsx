@@ -27,6 +27,7 @@ const SwipeableCard = ({
   const { t } = useLanguage();
   const pan = useRef(new Animated.ValueXY()).current;
   const [showStamp, setShowStamp] = useState<"refuse" | "choose" | null>(null);
+  const [currentSwipeDistance, setCurrentSwipeDistance] = useState(0);
 
   const panResponder = useRef(
     PanResponder.create({
@@ -40,8 +41,11 @@ const SwipeableCard = ({
         });
       },
       onPanResponderMove: (evt, gestureState) => {
-        // Show stamp when card moves beyond threshold
-        if (Math.abs(gestureState.dx) > SWIPE_THRESHOLD) {
+        setCurrentSwipeDistance(Math.abs(gestureState.dx));
+
+        const swipePercentage = Math.abs(gestureState.dx) / screenWidth;
+
+        if (swipePercentage >= 0.1) {
           if (gestureState.dx > 0 && showStamp !== "choose") {
             setShowStamp("choose");
             onSwipeStateChange?.("right");
@@ -88,6 +92,7 @@ const SwipeableCard = ({
             useNativeDriver: false,
           }).start();
           setShowStamp(null);
+          setCurrentSwipeDistance(0);
           onSwipeStateChange?.(null);
         }
       },
@@ -97,6 +102,7 @@ const SwipeableCard = ({
   const resetCard = () => {
     pan.setValue({ x: 0, y: 0 });
     setShowStamp(null);
+    setCurrentSwipeDistance(0);
     onSwipeStateChange?.(null);
   };
 
@@ -120,6 +126,21 @@ const SwipeableCard = ({
     const StampIcon = isChoose ? Check : X;
     const stampText = isChoose ? t("swipe.choose") : t("swipe.refuse");
 
+    
+    const swipePercentage = currentSwipeDistance / screenWidth;
+    let stampOpacity = 0.15; 
+    if (swipePercentage < 0.15){
+     stampOpacity= 0;
+    }
+
+    if (swipePercentage >= 0.5) {
+      stampOpacity = 1; 
+    } else if (swipePercentage >= 0.1) {
+      
+      stampOpacity =
+        0.15 + ((swipePercentage - 0.1) / (0.5 - 0.1)) * (1 - 0.15);
+    }
+
     return (
       <View
         style={{
@@ -137,7 +158,7 @@ const SwipeableCard = ({
           justifyContent: "center",
           alignItems: "center",
           transform: [{ rotate: isChoose ? "-15deg" : "15deg" }],
-    
+          opacity: stampOpacity,
         }}
       >
         {/* <StampIcon size={40} color={stampColor} weight="bold" /> */}

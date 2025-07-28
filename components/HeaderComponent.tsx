@@ -216,6 +216,14 @@ const UserMenuDropdown = () => {
         setDropdownOpen(false);
       },
     },
+    {
+      icon: List,
+      label: t("header.newJobs"),
+      action: () => {
+        router.push("/watchList");
+        setDropdownOpen(false);
+      },
+    }
   ];
 
   return (
@@ -345,7 +353,7 @@ const HeaderComponent = ({
   return (
     <View
       style={{
-        backgroundColor: colors.background,
+        backgroundColor: colors.surface,
         borderBottomColor: colors.border,
       }}
       className={`flex-row items-center gap-2 h-[90px] w-full px-4 border-b mb-8 ${className || ""}`}

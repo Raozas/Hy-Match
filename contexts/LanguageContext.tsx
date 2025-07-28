@@ -23,6 +23,7 @@ const translations = {
     "header.profile": "Profile",
     "header.themeMode": "Theme Mode",
     "header.language": "Language",
+    "header.newJobs": "New Jobs",
 
     // Home Screen
     "home.allJobsCompleted": "All jobs checked!",
@@ -42,13 +43,32 @@ const translations = {
     "filter.salaryRange": "Salary Range",
     "filter.commutingEase": "Commuting Ease",
     "filter.rating": "Rating",
-    "filter.clearAll": "Clear All",
-    "filter.applyFilters": "Apply Filters",
+    "filter.clearAll": "Clear",
+    "filter.applyFilters": "Apply",
     "filter.bySalary": "By Salary",
     "filter.commutingTimeHome": "Commuting Time (from Home)",
     "filter.commutingTimeSchool": "Commuting Time (from School)",
     "filter.byPublicationDate": "By Publication Date",
     "filter.adjustSalaryRange": "Use buttons below to adjust salary range:",
+    "filter.filters": "Filters",
+
+    // Salary options
+    "salary.hourly": "Hourly",
+    "salary.daily": "Daily",
+    "salary.weekly": "Weekly",
+    "salary.monthly": "Monthly",
+    "salary.selectTypeAndRange": "Select salary type and range:",
+    "salary.selectRange": "Select Range",
+    "salary.range": "Range",
+
+    // Time options
+    "time.5minutes": "~5 minutes",
+    "time.10minutes": "~10 minutes",
+    "time.15minutes": "~15 minutes",
+    "time.20minutes": "~20 minutes",
+    "time.30minutes": "~30 minutes",
+    "time.45minutes": "~45 minutes",
+    "time.60minutes": "~60 minutes",
 
     // List Component
     "list.jobsCount": " jobs",
@@ -159,6 +179,20 @@ const translations = {
     "contact.chat": "Chat",
     "contact.job": "Job",
     "contact.emailSubject": "Regarding:",
+
+    // Date options
+    "date.today": "Today",
+    "date.yesterday": "Yesterday",
+    "date.last7Days": "Last 7 days",
+    "date.last30Days": "Last 30 days",
+    "date.thisMonth": "This month",
+    "date.lastMonth": "Last month",
+
+    // Watch List
+    "watchList.title": "New Jobs",
+    "watchList.newJobs": "Incoming Jobs",
+    "watchList.noNewJobs": "No new jobs available",
+    "watchList.checkBackLater": "Check back later for new opportunities",
   },
   ja: {
     // Header
@@ -169,6 +203,7 @@ const translations = {
     "header.profile": "プロフィール",
     "header.themeMode": "テーマモード",
     "header.language": "言語",
+    "header.newJobs": "ウォッチリスト",
 
     // Home Screen
     "home.allJobsCompleted": "すべての仕事を確認しました！",
@@ -188,13 +223,32 @@ const translations = {
     "filter.salaryRange": "給与範囲",
     "filter.commutingEase": "通勤の容易さ",
     "filter.rating": "評価",
-    "filter.clearAll": "すべてクリア",
-    "filter.applyFilters": "フィルター適用",
+    "filter.clearAll": "クリア",
+    "filter.applyFilters": "適用",
     "filter.bySalary": "給与順",
     "filter.commutingTimeHome": "通勤時間（自宅から）",
     "filter.commutingTimeSchool": "通勤時間（学校から）",
     "filter.byPublicationDate": "掲載日順",
     "filter.adjustSalaryRange": "下のボタンで給与範囲を調整:",
+    "filter.filters": "フィルター",
+
+    // Salary options
+    "salary.hourly": "時給",
+    "salary.daily": "日給",
+    "salary.weekly": "週給",
+    "salary.monthly": "月給",
+    "salary.selectTypeAndRange": "給与の種類と範囲を選択してください：",
+    "salary.selectRange": "範囲を選択",
+    "salary.range": "範囲",
+
+    // Time options
+    "time.5minutes": "～5分",
+    "time.10minutes": "～10分",
+    "time.15minutes": "～15分",
+    "time.20minutes": "～20分",
+    "time.30minutes": "～30分",
+    "time.45minutes": "～45分",
+    "time.60minutes": "～60分",
 
     // List Component
     "list.jobsCount": " 件の仕事",
@@ -302,6 +356,20 @@ const translations = {
     "contact.chat": "チャット",
     "contact.job": "仕事",
     "contact.emailSubject": "件名：",
+
+    // Date options
+    "date.today": "今日",
+    "date.yesterday": "昨日",
+    "date.last7Days": "過去7日間",
+    "date.last30Days": "過去30日間",
+    "date.thisMonth": "今月",
+    "date.lastMonth": "先月",
+
+    // Watch List
+    "watchList.title": "ウォッチリスト",
+    "watchList.newJobs": "ウォッチリスト",
+    "watchList.noNewJobs": "新着求人はありません",
+    "watchList.checkBackLater": "新しい求人をお待ちください",
   },
   uz: {
     // Header
@@ -312,6 +380,7 @@ const translations = {
     "header.profile": "Profil",
     "header.themeMode": "Tema rejimi",
     "header.language": "Til",
+    "header.newJobs": "Yangi ishlar",
 
     // Home Screen
     "home.allJobsCompleted": "Barcha ishlar ko'rib chiqildi!",
@@ -331,14 +400,33 @@ const translations = {
     "filter.salaryRange": "Maosh diapazoni",
     "filter.commutingEase": "Ishga borish qulayligi",
     "filter.rating": "Reyting",
-    "filter.clearAll": "Hammasini tozalash",
-    "filter.applyFilters": "Filtrni qo'llash",
+    "filter.clearAll": "Tozalash",
+    "filter.applyFilters": "Qo'llash",
     "filter.bySalary": "Maosh bo'yicha",
     "filter.commutingTimeHome": "Ishga borish vaqti (uydan)",
     "filter.commutingTimeSchool": "Ishga borish vaqti (maktabdan)",
     "filter.byPublicationDate": "E'lon sanasi bo'yicha",
     "filter.adjustSalaryRange":
       "Maosh diapazonini sozlash uchun tugmalardan foydalaning:",
+    "filter.filters": "Filtrlar",
+
+    // Salary options
+    "salary.hourly": "Soatlik",
+    "salary.daily": "Kunlik",
+    "salary.weekly": "Haftalik",
+    "salary.monthly": "Oylik",
+    "salary.selectTypeAndRange": "Maosh turi va diapazonini tanlang:",
+    "salary.selectRange": "Diapazonni tanlang",
+    "salary.range": "Diapazon",
+
+    // Time options
+    "time.5minutes": "~5 daqiqa",
+    "time.10minutes": "~10 daqiqa",
+    "time.15minutes": "~15 daqiqa",
+    "time.20minutes": "~20 daqiqa",
+    "time.30minutes": "~30 daqiqa",
+    "time.45minutes": "~45 daqiqa",
+    "time.60minutes": "~60 daqiqa",
 
     // List Component
     "list.jobsCount": " ta ish",
@@ -452,6 +540,20 @@ const translations = {
     "contact.chat": "Chat",
     "contact.job": "Ish",
     "contact.emailSubject": "Mavzu:",
+
+    // Date options
+    "date.today": "Bugun",
+    "date.yesterday": "Kecha",
+    "date.last7Days": "So'nggi 7 kun",
+    "date.last30Days": "So'nggi 30 kun",
+    "date.thisMonth": "Bu oy",
+    "date.lastMonth": "O'tgan oy",
+
+    // Watch List
+    "watchList.title": "Yangi ishlar",
+    "watchList.newJobs": "Yangi kelgan ishlar",
+    "watchList.noNewJobs": "Yangi ishlar yo'q",
+    "watchList.checkBackLater": "Yangi imkoniyatlar uchun keyinroq qarang",
   },
 };
 

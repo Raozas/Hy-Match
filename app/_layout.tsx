@@ -28,6 +28,7 @@ export default function RootLayout() {
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen name="+not-found" />
               <Stack.Screen name="profile" options={{ headerShown: false }} />
+              <Stack.Screen name="watchList" options={{ headerShown: false }} />
             </Stack>
           </JobProvider>
         </ThemeProvider>
