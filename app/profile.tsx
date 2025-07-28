@@ -8,6 +8,7 @@ import VideoPickerComponent from "@/components/VideoPickerComponent";
 import WeekDays from "@/components/WeekDays";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as FileSystem from "expo-file-system";
 import * as Print from "expo-print";
 import { router } from "expo-router";
@@ -28,122 +29,86 @@ export default function ProfileScreen() {
   const [isEditable, setIsEditable] = useState<"yes" | "no">("no");
   const [saveButtonText, setSaveButtonText] = useState(t("profile.edit"));
   const [isLoading, setIsLoading] = useState(true);
-  const [pendingChanges, setPendingChanges] = useState<boolean>(false);
-
-  // Dynamic location options
   const [prefectureOptions, setPrefectureOptions] = useState<string[]>([]);
   const [cityOptions, setCityOptions] = useState<string[]>([]);
-
-  // Debounce timer ref
-  const saveTimeoutRef = React.useRef<number | null>(null);
 
   useEffect(() => {
     loadUserProfile();
   }, []);
+
   const loadUserProfile = async () => {
     try {
       setIsLoading(true);
-      // Add a small delay to ensure database is ready
-      await new Promise((resolve) => setTimeout(resolve, 100));
 
-      const profile = await databaseService.getUserProfile();
-      if (profile) {
+      // Load from AsyncStorage instead of database
+      const storedProfile = await AsyncStorage.getItem("userProfile");
+      if (storedProfile) {
+        const profile = JSON.parse(storedProfile);
         setUserProfile(profile);
         setProfileImage(profile.profileImage || null);
         setProfileVideo(profile.profileVideo || null);
-        // Only update location options on initial load
         updateLocationOptions(profile.country, profile.prefecture);
       } else {
         // Create a default profile if none exists
         const defaultProfile: UserProfile = {
-          name: "Default User",
-          age: "20",
-          country: "Japan",
+          name: "",
+          age: "",
+          country: "",
         };
         setUserProfile(defaultProfile);
       }
     } catch (error) {
       console.error("Error loading user profile:", error);
-      // Create a minimal default profile if database fails
+      // Create a minimal default profile if loading fails
       setUserProfile({
-        name: "Default User",
-        age: "20",
-        country: "Japan",
+        name: "",
+        age: "",
+        country: "",
       });
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Debounced save function to avoid interrupting user input
-  const debouncedSave = React.useCallback((updatedProfile: UserProfile) => {
-    setPendingChanges(true);
-
-    // Clear existing timeout
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
+  // Save to AsyncStorage function
+  const saveToStorage = async (profile: UserProfile) => {
+    try {
+      await AsyncStorage.setItem("userProfile", JSON.stringify(profile));
+    } catch (error) {
+      console.error("Error saving profile to storage:", error);
     }
+  };
 
-    // Set new timeout for saving (500ms delay)
-    saveTimeoutRef.current = setTimeout(async () => {
-      try {
-        await databaseService.saveUserProfile(updatedProfile);
-        setPendingChanges(false);
-        console.log("Profile saved successfully");
-      } catch (error) {
-        console.error("Error saving profile:", error);
-        setPendingChanges(false);
-      }
-    }, 10000);
-  }, []);
-
-  // Cleanup timeout on unmount
-  React.useEffect(() => {
-    return () => {
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
-      }
+  // Helper function to update profile with a consistent pattern
+  const updateProfile = (updates: Partial<UserProfile>) => {
+    const updatedProfile: UserProfile = {
+      ...userProfile,
+      name: userProfile?.name || "",
+      ...updates,
     };
-  }, []);
+    setUserProfile(updatedProfile);
+    saveToStorage(updatedProfile);
+  };
 
   const handleNameChange = async (newName: string) => {
     const updatedProfile: UserProfile = {
       ...userProfile,
       name: newName,
-      age: userProfile?.age,
-      country: userProfile?.country,
-      homeStation: userProfile?.homeStation,
-      timeToStationFromHome: userProfile?.timeToStationFromHome,
-      schoolStation: userProfile?.schoolStation,
-      timeToStationFromSchool: userProfile?.timeToStationFromSchool,
-      postalCode: userProfile?.postalCode,
-      prefecture: userProfile?.prefecture,
-      city1: userProfile?.city1,
-      city2: userProfile?.city2,
-      streetAddress: userProfile?.streetAddress,
-      phoneNumber: userProfile?.phoneNumber,
-      email: userProfile?.email,
-      profileImage: profileImage || undefined,
-      profileVideo: profileVideo || undefined,
     };
 
-    // Update state immediately for responsive UI
     setUserProfile(updatedProfile);
-    // Save to database with debounce
-    debouncedSave(updatedProfile);
+    saveToStorage(updatedProfile);
   };
 
   const handleAgeChange = async (newAge: string) => {
     const updatedProfile: UserProfile = {
       ...userProfile,
-      name: userProfile?.name || "Default Name",
+      name: userProfile?.name || "",
       age: newAge,
-      profileImage: profileImage || undefined,
-      profileVideo: profileVideo || undefined,
     };
 
     setUserProfile(updatedProfile);
-    debouncedSave(updatedProfile);
+    saveToStorage(updatedProfile);
   };
 
   const handleGenderChange = async (newGender: string) => {
@@ -157,56 +122,27 @@ export default function ProfileScreen() {
 
     const updatedProfile: UserProfile = {
       ...userProfile,
-      name: userProfile?.name || "Default Name",
-      age: userProfile?.age,
-      country: userProfile?.country,
+      name: userProfile?.name || "",
       gender: genderValue,
-      homeStation: userProfile?.homeStation,
-      timeToStationFromHome: userProfile?.timeToStationFromHome,
-      schoolStation: userProfile?.schoolStation,
-      timeToStationFromSchool: userProfile?.timeToStationFromSchool,
-      postalCode: userProfile?.postalCode,
-      prefecture: userProfile?.prefecture,
-      city1: userProfile?.city1,
-      city2: userProfile?.city2,
-      streetAddress: userProfile?.streetAddress,
-      phoneNumber: userProfile?.phoneNumber,
-      email: userProfile?.email,
-      visaType: userProfile?.visaType,
-      visaValidityPeriod: userProfile?.visaValidityPeriod,
-      residenceStatus: userProfile?.residenceStatus,
-      residenceStatusChangeSchedule: userProfile?.residenceStatusChangeSchedule,
-      japaneseLevel: userProfile?.japaneseLevel,
-      availableFromTime: userProfile?.availableFromTime,
-      availableToTime: userProfile?.availableToTime,
-      currentOccupation: userProfile?.currentOccupation,
-      desiredJobType: userProfile?.desiredJobType,
-      workHistory: userProfile?.workHistory,
-      availableDays: userProfile?.availableDays,
-      preferredWorkStyle: userProfile?.preferredWorkStyle,
-      profileImage: profileImage || undefined,
-      profileVideo: profileVideo || undefined,
     };
 
     setUserProfile(updatedProfile);
-    debouncedSave(updatedProfile);
+    saveToStorage(updatedProfile);
     console.log("Gender updated:", genderValue);
   };
 
   const handleCountryChange = async (newCountry: string) => {
     const updatedProfile: UserProfile = {
       ...userProfile,
-      name: userProfile?.name || "Default Name",
+      name: userProfile?.name || "",
       country: newCountry,
       prefecture: undefined, // Reset prefecture when country changes
       city1: undefined, // Reset cities when country changes
       city2: undefined,
-      profileImage: profileImage || undefined,
-      profileVideo: profileVideo || undefined,
     };
 
     setUserProfile(updatedProfile);
-    debouncedSave(updatedProfile);
+    saveToStorage(updatedProfile);
 
     // Update location options for new country immediately for better UX
     updateLocationOptions(newCountry);
@@ -215,53 +151,45 @@ export default function ProfileScreen() {
   const handleStationChange = async (newStation: string) => {
     const updatedProfile: UserProfile = {
       ...userProfile,
-      name: userProfile?.name || "Default Name",
+      name: userProfile?.name || "",
       homeStation: newStation,
-      profileImage: profileImage || undefined,
-      profileVideo: profileVideo || undefined,
     };
 
     setUserProfile(updatedProfile);
-    debouncedSave(updatedProfile);
+    saveToStorage(updatedProfile);
   };
 
   const handleTimeToStationFromHomeChange = async (newTime: string) => {
     const updatedProfile: UserProfile = {
       ...userProfile,
-      name: userProfile?.name || "Default Name",
+      name: userProfile?.name || "",
       timeToStationFromHome: newTime,
-      profileImage: profileImage || undefined,
-      profileVideo: profileVideo || undefined,
     };
 
     setUserProfile(updatedProfile);
-    debouncedSave(updatedProfile);
+    saveToStorage(updatedProfile);
   };
 
   const handleSchoolStationChange = async (newStation: string) => {
     const updatedProfile: UserProfile = {
       ...userProfile,
-      name: userProfile?.name || "Default Name",
+      name: userProfile?.name || "",
       schoolStation: newStation,
-      profileImage: profileImage || undefined,
-      profileVideo: profileVideo || undefined,
     };
 
     setUserProfile(updatedProfile);
-    debouncedSave(updatedProfile);
+    saveToStorage(updatedProfile);
   };
 
   const handleTimeToStationFromSchoolChange = async (newTime: string) => {
     const updatedProfile: UserProfile = {
       ...userProfile,
-      name: userProfile?.name || "Default Name",
+      name: userProfile?.name || "",
       timeToStationFromSchool: newTime,
-      profileImage: profileImage || undefined,
-      profileVideo: profileVideo || undefined,
     };
 
     setUserProfile(updatedProfile);
-    debouncedSave(updatedProfile);
+    saveToStorage(updatedProfile);
   };
 
   const handleImageSelected = async (imageUri: string) => {
@@ -269,13 +197,12 @@ export default function ProfileScreen() {
 
     const updatedProfile: UserProfile = {
       ...userProfile,
-      name: userProfile?.name || "Default Name",
+      name: userProfile?.name || "",
       profileImage: imageUri,
-      profileVideo: profileVideo || undefined,
     };
 
     setUserProfile(updatedProfile);
-    debouncedSave(updatedProfile);
+    saveToStorage(updatedProfile);
   };
 
   const handleImageReset = async () => {
@@ -283,13 +210,12 @@ export default function ProfileScreen() {
 
     const updatedProfile: UserProfile = {
       ...userProfile,
-      name: userProfile?.name || "Default Name",
+      name: userProfile?.name || "",
       profileImage: undefined,
-      profileVideo: profileVideo || undefined,
     };
 
     setUserProfile(updatedProfile);
-    debouncedSave(updatedProfile);
+    saveToStorage(updatedProfile);
   };
 
   const handleVideoUpdate = async (videoUri: string) => {
@@ -297,13 +223,12 @@ export default function ProfileScreen() {
 
     const updatedProfile: UserProfile = {
       ...userProfile,
-      name: userProfile?.name || "Default Name",
-      profileImage: profileImage || undefined,
+      name: userProfile?.name || "",
       profileVideo: videoUri,
     };
 
     setUserProfile(updatedProfile);
-    debouncedSave(updatedProfile);
+    saveToStorage(updatedProfile);
   };
 
   const handleVideoReset = async () => {
@@ -311,13 +236,12 @@ export default function ProfileScreen() {
 
     const updatedProfile: UserProfile = {
       ...userProfile,
-      name: userProfile?.name || "Default Name",
-      profileImage: profileImage || undefined,
+      name: userProfile?.name || "",
       profileVideo: undefined,
     };
 
     setUserProfile(updatedProfile);
-    debouncedSave(updatedProfile);
+    saveToStorage(updatedProfile);
   };
 
   const handlePostalCodeChange = async (newPostalCode: string) => {
@@ -330,7 +254,7 @@ export default function ProfileScreen() {
     };
 
     setUserProfile(updatedProfile);
-    debouncedSave(updatedProfile);
+    saveToStorage(updatedProfile);
   };
 
   const handlePrefectureChange = async (newPrefecture: string) => {
@@ -345,7 +269,7 @@ export default function ProfileScreen() {
     };
 
     setUserProfile(updatedProfile);
-    debouncedSave(updatedProfile);
+    saveToStorage(updatedProfile);
 
     // Update city options for new prefecture immediately
     if (userProfile?.country) {
@@ -363,7 +287,7 @@ export default function ProfileScreen() {
     };
 
     setUserProfile(updatedProfile);
-    debouncedSave(updatedProfile);
+    saveToStorage(updatedProfile);
   };
 
   const handleCity2Change = async (newCity2: string) => {
@@ -376,7 +300,7 @@ export default function ProfileScreen() {
     };
 
     setUserProfile(updatedProfile);
-    debouncedSave(updatedProfile);
+    saveToStorage(updatedProfile);
   };
 
   const handleStreetAddressChange = async (newStreetAddress: string) => {
@@ -389,7 +313,7 @@ export default function ProfileScreen() {
     };
 
     setUserProfile(updatedProfile);
-    debouncedSave(updatedProfile);
+    saveToStorage(updatedProfile);
   };
 
   const handlePhoneNumberChange = async (newPhoneNumber: string) => {
@@ -402,7 +326,7 @@ export default function ProfileScreen() {
     };
 
     setUserProfile(updatedProfile);
-    debouncedSave(updatedProfile);
+    saveToStorage(updatedProfile);
   };
 
   const handleEmailChange = async (newEmail: string) => {
@@ -415,7 +339,7 @@ export default function ProfileScreen() {
     };
 
     setUserProfile(updatedProfile);
-    debouncedSave(updatedProfile);
+    saveToStorage(updatedProfile);
   };
 
   const handleVisaTypeChange = async (newVisaType: string) => {
@@ -428,7 +352,7 @@ export default function ProfileScreen() {
     };
 
     setUserProfile(updatedProfile);
-    debouncedSave(updatedProfile);
+    saveToStorage(updatedProfile);
   };
 
   const handleVisaValidityPeriodChange = async (newPeriod: string) => {
@@ -441,7 +365,7 @@ export default function ProfileScreen() {
     };
 
     setUserProfile(updatedProfile);
-    debouncedSave(updatedProfile);
+    saveToStorage(updatedProfile);
   };
 
   const handleResidenceStatusChange = async (newStatus: string) => {
@@ -454,7 +378,7 @@ export default function ProfileScreen() {
     };
 
     setUserProfile(updatedProfile);
-    debouncedSave(updatedProfile);
+    saveToStorage(updatedProfile);
   };
 
   const handleResidenceStatusChangeScheduleChange = async (
@@ -469,7 +393,7 @@ export default function ProfileScreen() {
     };
 
     setUserProfile(updatedProfile);
-    debouncedSave(updatedProfile);
+    saveToStorage(updatedProfile);
   };
 
   const handleJapaneseLevelChange = async (newLevel: string) => {
@@ -482,7 +406,7 @@ export default function ProfileScreen() {
     };
 
     setUserProfile(updatedProfile);
-    debouncedSave(updatedProfile);
+    saveToStorage(updatedProfile);
   };
 
   const handleAvailableFromTimeChange = async (newTime: string) => {
@@ -495,7 +419,7 @@ export default function ProfileScreen() {
     };
 
     setUserProfile(updatedProfile);
-    debouncedSave(updatedProfile);
+    saveToStorage(updatedProfile);
   };
 
   const handleAvailableToTimeChange = async (newTime: string) => {
@@ -508,7 +432,7 @@ export default function ProfileScreen() {
     };
 
     setUserProfile(updatedProfile);
-    debouncedSave(updatedProfile);
+    saveToStorage(updatedProfile);
   };
 
   const handleCurrentOccupationChange = async (newOccupation: string) => {
@@ -521,7 +445,7 @@ export default function ProfileScreen() {
     };
 
     setUserProfile(updatedProfile);
-    debouncedSave(updatedProfile);
+    saveToStorage(updatedProfile);
   };
 
   const handleDesiredJobTypeChange = async (newJobType: string) => {
@@ -534,7 +458,7 @@ export default function ProfileScreen() {
     };
 
     setUserProfile(updatedProfile);
-    debouncedSave(updatedProfile);
+    saveToStorage(updatedProfile);
   };
 
   const handleWorkHistoryChange = async (newHistory: string) => {
@@ -547,7 +471,7 @@ export default function ProfileScreen() {
     };
 
     setUserProfile(updatedProfile);
-    debouncedSave(updatedProfile);
+    saveToStorage(updatedProfile);
   };
 
   const handleAvailableDaysChange = async (newDays: string) => {
@@ -560,7 +484,7 @@ export default function ProfileScreen() {
     };
 
     setUserProfile(updatedProfile);
-    debouncedSave(updatedProfile);
+    saveToStorage(updatedProfile);
   };
 
   const handlePreferredWorkStyleChange = async (newWorkStyle: string) => {
@@ -573,7 +497,7 @@ export default function ProfileScreen() {
     };
 
     setUserProfile(updatedProfile);
-    debouncedSave(updatedProfile);
+    saveToStorage(updatedProfile);
   };
 
   const updateLocationOptions = (countryCode?: string, prefecture?: string) => {
@@ -609,12 +533,12 @@ export default function ProfileScreen() {
     }
   };
 
-  // Only update location options when country or prefecture changes, and not during initial load
+  // Only update location options when country or prefecture changes manually, not during initial load
   useEffect(() => {
     if (userProfile?.country && !isLoading) {
       updateLocationOptions(userProfile.country, userProfile.prefecture);
     }
-  }, [userProfile?.country, userProfile?.prefecture, isLoading]);
+  }, [isLoading]); // Remove userProfile dependencies to prevent conflicts
 
   const handleSaveEdit = async () => {
     if (isEditable === "no") {
@@ -622,16 +546,10 @@ export default function ProfileScreen() {
       setIsEditable("yes");
       setSaveButtonText(t("profile.save"));
     } else {
-      // Force save any pending changes immediately
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
-        saveTimeoutRef.current = null;
-      }
-
-      if (userProfile && pendingChanges) {
+      // Save current profile to AsyncStorage
+      if (userProfile) {
         try {
-          await databaseService.saveUserProfile(userProfile);
-          setPendingChanges(false);
+          await saveToStorage(userProfile);
           console.log("Profile saved successfully");
         } catch (error) {
           console.error("Error saving profile:", error);
@@ -982,7 +900,7 @@ export default function ProfileScreen() {
           <View className="flex-row gap-[11px]">
             <TextWithIcon
               icon="IdentificationCard"
-              text={userProfile?.name || "Enter your name"}
+              text={userProfile?.name || ""}
               type="input"
               className="w-[240px]"
               onValueChange={handleNameChange}
@@ -1003,7 +921,7 @@ export default function ProfileScreen() {
           <Separator width={360} />
           <TextWithIcon
             icon="Cake"
-            text={userProfile?.age || t("profile.age")}
+            text={userProfile?.age || "Select age"}
             type="select"
             info={t("profile.info.age")}
             options={[
@@ -1030,7 +948,7 @@ export default function ProfileScreen() {
           <Separator width={360} />
           <TextWithIcon
             icon="GlobeHemisphereEast"
-            text={userProfile?.country || "Select your country"}
+            text={userProfile?.country || "Select country"}
             type="selectCountry"
             className="w-[240px]"
             onValueChange={handleCountryChange}
@@ -1111,7 +1029,7 @@ export default function ProfileScreen() {
           <Separator width={360} />
           <TextWithIcon
             icon="CurrencyKzt"
-            text={userProfile?.postalCode || t("profile.postalCode")}
+            text={userProfile?.postalCode || ""}
             type="input"
             className="w-[174px]"
             info={t("profile.info.postalCode")}
@@ -1166,7 +1084,7 @@ export default function ProfileScreen() {
           <Separator width={360} />
           <TextWithIcon
             icon="BuildingApartment"
-            text={userProfile?.streetAddress || t("profile.buildingName")}
+            text={userProfile?.streetAddress || ""}
             className="w-[347px]"
             type="input"
             info={t("profile.info.streetAddress")}
@@ -1176,7 +1094,7 @@ export default function ProfileScreen() {
           <Separator width={360} />
           <TextWithIcon
             icon="Numpad"
-            text={userProfile?.phoneNumber || t("profile.phoneNumber")}
+            text={userProfile?.phoneNumber || ""}
             className="w-[347px]"
             type="input"
             info={t("profile.info.phoneNumber")}
@@ -1186,7 +1104,7 @@ export default function ProfileScreen() {
           <Separator width={360} />
           <TextWithIcon
             icon="At"
-            text={userProfile?.email || t("profile.email")}
+            text={userProfile?.email || ""}
             className="w-[347px]"
             type="input"
             info={t("profile.info.email")}
@@ -1326,9 +1244,7 @@ export default function ProfileScreen() {
           <Separator width={360} />
           <TextWithIcon
             icon="Briefcase"
-            text={
-              userProfile?.currentOccupation || t("profile.currentOccupation")
-            }
+            text={userProfile?.currentOccupation || ""}
             type="input"
             info={t("profile.info.currentOccupation")}
             className="!w-[347px] !text-[16px]"
@@ -1338,7 +1254,7 @@ export default function ProfileScreen() {
           <Separator width={360} />
           <TextWithIcon
             icon="Bank"
-            text={userProfile?.desiredJobType || t("profile.desiredJobType")}
+            text={userProfile?.desiredJobType || ""}
             type="input"
             info={t("profile.info.desiredJobType")}
             className="!w-[347px] !text-[16px]"
@@ -1348,7 +1264,7 @@ export default function ProfileScreen() {
           <Separator width={360} />
           <TextWithIcon
             icon="Table"
-            text={userProfile?.workHistory || t("profile.workHistory")}
+            text={userProfile?.workHistory || ""}
             type="input"
             info={t("profile.info.workHistory")}
             className="!w-[347px] !text-[16px]"
@@ -1362,9 +1278,6 @@ export default function ProfileScreen() {
                 <Text className="text-[#48A6AC] font-semibold text-[28px]">
                   {saveButtonText}
                 </Text>
-                {pendingChanges && (
-                  <View className="absolute top-1 right-1 w-2 h-2 bg-orange-500 rounded-full" />
-                )}
               </View>
             </TouchableOpacity>
             <TouchableOpacity onPress={handleDownloadProfile}>

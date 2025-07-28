@@ -1,5 +1,6 @@
 import React from "react";
 import { View } from "react-native";
+import { useLanguage } from "../contexts/LanguageContext";
 import { useTheme } from "../contexts/ThemeContext";
 import TextWithIcon from "./TextWithIcon";
 import WeekDays from "./WeekDays";
@@ -54,6 +55,7 @@ interface CardComponentProps {
 
 const CardComponent = ({ jobData, className }: CardComponentProps) => {
   const { colors } = useTheme();
+  const { t } = useLanguage();
 
   return (
     <View
@@ -63,15 +65,24 @@ const CardComponent = ({ jobData, className }: CardComponentProps) => {
       }}
       className={`flex-col gap-2 h-[590px] w-[360px] rounded-[33px] border-solid border-[1px] px-2.5 py-6  ${className || ""}`}
     >
-      <TextWithIcon icon="BuildingOffice" text={jobData.company} />
+      <TextWithIcon
+        icon="BuildingOffice"
+        text={jobData.company}
+        info={t("card.info.company")}
+      />
       <Separator />
-      <TextWithIcon icon="GraduationCap" text={jobData.position} />
+      <TextWithIcon
+        icon="GraduationCap"
+        text={jobData.position}
+        info={t("card.info.position")}
+      />
       <Separator />
       <View className="flex-row items-center">
         <TextWithIcon
           icon="CurrencyJpy"
           text={jobData.salary}
           className="w-[174px]"
+          info={t("card.info.salary")}
         />
         <HorizontalLine />
         <TextWithIcon
@@ -79,6 +90,7 @@ const CardComponent = ({ jobData, className }: CardComponentProps) => {
           text={jobData.languageSkill}
           type="LanSkill"
           className="w-[164px] ml-2.5"
+          info={t("card.info.languageSkill")}
         />
       </View>
       <Separator />
@@ -87,6 +99,7 @@ const CardComponent = ({ jobData, className }: CardComponentProps) => {
           icon="HouseLine&Footprints"
           text={jobData.walkTime}
           className="w-[174px]"
+          info={t("card.info.walkTime")}
         />
         <HorizontalLine />
         <TextWithIcon
@@ -95,6 +108,7 @@ const CardComponent = ({ jobData, className }: CardComponentProps) => {
           className="w-[164px] ml-2.5"
           type="TrainSt"
           text2nd={jobData.stationCode}
+          info={t("card.info.station")}
         />
       </View>
       <Separator />
@@ -104,9 +118,15 @@ const CardComponent = ({ jobData, className }: CardComponentProps) => {
         useHours="yes"
         editable="no"
         onAirChange={(newOnAir) => console.log(newOnAir)}
+        info={t("card.info.schedule")}
       />
       <Separator />
-      <TextWithIcon icon="Star" text={jobData.rating} className="w-[174px]" />
+      <TextWithIcon
+        icon="Star"
+        text={jobData.rating}
+        className="w-[174px]"
+        info={t("card.info.rating")}
+      />
     </View>
   );
 };

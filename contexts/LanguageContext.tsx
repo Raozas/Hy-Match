@@ -193,6 +193,16 @@ const translations = {
     "watchList.newJobs": "Incoming Jobs",
     "watchList.noNewJobs": "No new jobs available",
     "watchList.checkBackLater": "Check back later for new opportunities",
+
+    // Card Component Info
+    "card.info.company": "Name of the company offering this job position",
+    "card.info.position": "Job title and role description for this position",
+    "card.info.salary": "Hourly or monthly salary range for this job",
+    "card.info.languageSkill": "Required Japanese language proficiency level",
+    "card.info.walkTime": "Walking time from nearest station to workplace",
+    "card.info.station": "Nearest train station to the workplace",
+    "card.info.schedule": "Working days and hours for this position",
+    "card.info.rating": "Company rating based on employee reviews",
   },
   ja: {
     // Header
@@ -370,6 +380,16 @@ const translations = {
     "watchList.newJobs": "ウォッチリスト",
     "watchList.noNewJobs": "新着求人はありません",
     "watchList.checkBackLater": "新しい求人をお待ちください",
+
+    // Card Component Info
+    "card.info.company": "この求人を提供している会社名",
+    "card.info.position": "この求人の職種と役割の説明",
+    "card.info.salary": "この仕事の時給または月給の範囲",
+    "card.info.languageSkill": "必要な日本語能力レベル",
+    "card.info.walkTime": "最寄り駅から職場までの徒歩時間",
+    "card.info.station": "職場最寄りの電車駅",
+    "card.info.schedule": "この職種の勤務日と勤務時間",
+    "card.info.rating": "従業員レビューに基づく会社評価",
   },
   uz: {
     // Header
@@ -554,6 +574,16 @@ const translations = {
     "watchList.newJobs": "Yangi kelgan ishlar",
     "watchList.noNewJobs": "Yangi ishlar yo'q",
     "watchList.checkBackLater": "Yangi imkoniyatlar uchun keyinroq qarang",
+
+    // Card Component Info
+    "card.info.company": "Bu ish o'rnini taklif qiluvchi kompaniya nomi",
+    "card.info.position": "Bu lavozim uchun ish nomi va rol tavsifi",
+    "card.info.salary": "Ushbu ish uchun soatlik yoki oylik maosh oralig'i",
+    "card.info.languageSkill": "Talab qilinadigan yapon tili bilim darajasi",
+    "card.info.walkTime": "Eng yaqin bekattan ish joyigacha piyoda yurish vaqti",
+    "card.info.station": "Ish joyiga eng yaqin poyezd stansiyasi",
+    "card.info.schedule": "Ushbu lavozim uchun ish kunlari va soatlari",
+    "card.info.rating": "Xodimlar sharhlariga asoslangan kompaniya reytingi",
   },
 };
 
