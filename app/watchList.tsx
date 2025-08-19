@@ -1,14 +1,15 @@
 import CardComponent, { JobData } from "@/components/CardComponent";
 import ContactModal from "@/components/ContactModal";
-import FilterDropdown, { FilterOptions } from "@/components/FilterDropdown";
+import FilterDropdown from "@/components/FilterDropdown";
 import HeaderComponent from "@/components/HeaderComponent";
 import JobListItem from "@/components/JobListItem";
-import { useJobs } from "@/contexts/JobContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useJobFiltering } from "@/hooks/jobs/useJobFiltering";
+import { useJobList } from "@/hooks/jobs/useJobList";
 import { router } from "expo-router";
 import { X } from "phosphor-react-native";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   FlatList,
   Modal,
@@ -23,47 +24,15 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function WatchListScreen() {
   const { t } = useLanguage();
   const { colors } = useTheme();
-  const { jobs, getPendingJobs, updateJobStatus, refreshJobs, isLoading } =
-    useJobs();
-  const [filteredJobs, setFilteredJobs] = useState<JobData[]>([]);
   const [isFilterVisible, setIsFilterVisible] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedJob, setSelectedJob] = useState<JobData | null>(null);
   const [isJobDetailModalVisible, setIsJobDetailModalVisible] = useState(false);
   const [isContactModalVisible, setIsContactModalVisible] = useState(false);
 
-  useEffect(() => {
-    loadNewJobs();
-  }, [jobs]);
+  const { jobList, isRefreshing, handleRefresh, handleJobStatusChange } =
+    useJobList(); // Get pending jobs
 
-  const loadNewJobs = () => {
-    const pendingJobs = getPendingJobs();
-    setFilteredJobs(pendingJobs);
-  };
-
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    try {
-      await refreshJobs();
-      loadNewJobs();
-    } catch (error) {
-      console.error("Error refreshing jobs:", error);
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
-  const handleJobStatusChange = async (
-    jobId: string,
-    newStatus: JobData["status"]
-  ) => {
-    try {
-      await updateJobStatus(jobId, newStatus);
-      setFilteredJobs((prev) => prev.filter((job) => job.id !== jobId));
-    } catch (error) {
-      console.error("Error updating job status:", error);
-    }
-  };
+  const { filteredJobs, handleApplyFilters } = useJobFiltering(jobList);
 
   const handleJobPress = (job: JobData) => {
     setSelectedJob(job);
@@ -82,100 +51,6 @@ export default function WatchListScreen() {
 
   const closeContactModal = () => {
     setIsContactModalVisible(false);
-  };
-
-  const handleApplyFilters = (filters: FilterOptions) => {
-    const pendingJobs = getPendingJobs();
-    let filtered = [...pendingJobs];
-
-    // Filter by professions
-    if (filters.professions.length > 0) {
-      filtered = filtered.filter((job) =>
-        filters.professions.includes(job.position)
-      );
-    }
-
-    // Filter by Japanese level
-    if (filters.japaneseLevel.length > 0) {
-      filtered = filtered.filter((job) =>
-        filters.japaneseLevel.includes(job.languageSkill)
-      );
-    }
-
-    // Filter by salary range
-    filtered = filtered.filter((job) => {
-      const salaryMatch = job.salary.match(/¥(\d+,?\d*)\s*~\s*(\d+,?\d*)/);
-      if (salaryMatch) {
-        const minSalary = parseInt(salaryMatch[1].replace(",", ""));
-        const maxSalary = parseInt(salaryMatch[2].replace(",", ""));
-        const inRange =
-          minSalary >= filters.salaryRange[0] &&
-          maxSalary <= filters.salaryRange[1];
-        return inRange;
-      }
-      return true;
-    });
-
-    // Filter by commuting ease
-    if (filters.commutingEase.length > 0) {
-      filtered = filtered.filter((job) =>
-        filters.commutingEase.includes(job.walkTime)
-      );
-    }
-
-    // Filter by rating
-    if (filters.rating.length > 0) {
-      filtered = filtered.filter((job) => {
-        const jobRating = parseFloat(job.rating);
-        return filters.rating.some((ratingFilter) => {
-          const minRating = parseFloat(ratingFilter.replace("+", ""));
-          return jobRating >= minRating;
-        });
-      });
-    }
-
-    // Sort the filtered jobs
-    if (filters.sortBy) {
-      filtered.sort((a, b) => {
-        let comparison = 0;
-
-        switch (filters.sortBy) {
-          case "salary":
-            const aSalaryMatch = a.salary.match(/¥(\d+,?\d*)\s*~\s*(\d+,?\d*)/);
-            const bSalaryMatch = b.salary.match(/¥(\d+,?\d*)\s*~\s*(\d+,?\d*)/);
-            if (aSalaryMatch && bSalaryMatch) {
-              const aMaxSalary = parseInt(aSalaryMatch[2].replace(",", ""));
-              const bMaxSalary = parseInt(bSalaryMatch[2].replace(",", ""));
-              comparison = bMaxSalary - aMaxSalary;
-            }
-            break;
-
-          case "walkTime":
-          case "commutingFromSchool":
-            const aWalkTime = parseInt(a.walkTime.replace(/[^\d]/g, "")) || 0;
-            const bWalkTime = parseInt(b.walkTime.replace(/[^\d]/g, "")) || 0;
-            comparison = aWalkTime - bWalkTime;
-            break;
-
-          case "rating":
-            comparison = parseFloat(b.rating) - parseFloat(a.rating);
-            break;
-
-          case "publicationDate":
-            comparison = b.onAir.localeCompare(a.onAir);
-            break;
-
-          default:
-            comparison = 0;
-        }
-
-        // Apply sort order (asc/desc)
-        return filters.sortOrder === "desc" ? comparison : -comparison;
-      });
-    }
-
-    setFilteredJobs(filtered);
-    setIsFilterVisible(false);
   };
 
   const renderJobItem = ({ item }: { item: JobData }) => (
@@ -225,7 +100,7 @@ export default function WatchListScreen() {
           }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              {isLoading ? (
+              {jobList.length === 0 ? (
                 <>
                   <Text
                     style={[styles.emptyText, { color: colors.textSecondary }]}
@@ -259,7 +134,7 @@ export default function WatchListScreen() {
         visible={isFilterVisible}
         onClose={() => setIsFilterVisible(false)}
         onApplyFilters={handleApplyFilters}
-        jobs={getPendingJobs()}
+        jobs={jobList}
       />
 
       <Modal

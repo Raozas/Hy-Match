@@ -1,514 +1,123 @@
-import { Separator } from "@/components/CardComponent";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import HeaderComponent from "@/components/HeaderComponent";
-import ImagePickerComponent from "@/components/ImagePickerComponent";
-import TextComponent from "@/components/TextComponent";
-import TextWithIcon from "@/components/TextWithIcon";
-import VideoPickerComponent from "@/components/VideoPickerComponent";
-import WeekDays from "@/components/WeekDays";
+import { AddressSection } from "@/components/profile/AddressSection";
+import { ContactInfoSection } from "@/components/profile/ContactInfoSection";
+import { PersonalInfoSection } from "@/components/profile/PersonalInfoSection";
+import { ProfileActionButtons } from "@/components/profile/ProfileActionButtons";
+import { TransportationSection } from "@/components/profile/TransportationSection";
+import { VisaInfoSection } from "@/components/profile/VisaInfoSection";
+import { WorkInfoSection } from "@/components/profile/WorkInfoSection";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as FileSystem from "expo-file-system";
-import * as Print from "expo-print";
+import { useLocationData } from "@/hooks/profile/useLocationData";
+import { usePDFGenerator } from "@/hooks/profile/usePDFGenerator";
+import { useProfileData } from "@/hooks/profile/useProfileData";
+import { useProfileHandlers } from "@/hooks/profile/useProfileHandlers";
 import { router } from "expo-router";
-import * as Sharing from "expo-sharing";
-import { DownloadSimple } from "phosphor-react-native";
-import React, { useEffect, useState } from "react";
-import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import React, { useCallback, useEffect, useState } from "react";
+import { Alert, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import "../global.css";
-import { databaseService, UserProfile } from "../utils/database";
 import { getAddressByPostalCode } from "../utils/postalCodeData";
 
 export default function ProfileScreen() {
   const { colors } = useTheme();
   const { t } = useLanguage();
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [profileVideo, setProfileVideo] = useState<string | null>(null);
+  const {
+    userProfile,
+    profileImage,
+    profileVideo,
+    isLoading,
+    setProfileImage,
+    setProfileVideo,
+    updateProfile,
+  } = useProfileData();
+
+  const {
+    handleNameChange,
+    handleAgeChange,
+    handleGenderChange,
+    handleCountryChange,
+    handlePrefectureChange,
+    handleCity1Change,
+    handleCity2Change,
+    handlePostalCodeChange,
+    handleStreetAddressChange,
+    handlePhoneNumberChange,
+    handleEmailChange,
+    handleVisaTypeChange,
+    handleVisaValidityPeriodChange,
+    handleResidenceStatusChange,
+    handleResidenceStatusChangeScheduleChange,
+    handleJapaneseLevelChange,
+    handleAvailableFromTimeChange,
+    handleAvailableToTimeChange,
+    handleCurrentOccupationChange,
+    handleDesiredJobTypeChange,
+    handleWorkHistoryChange,
+    handleAvailableDaysChange,
+    handleStationChange,
+    handleTimeToStationFromHomeChange,
+    handleSchoolStationChange,
+    handleTimeToStationFromSchoolChange,
+  } = useProfileHandlers({
+    userProfile,
+    profileImage,
+    profileVideo,
+    updateProfile,
+  });
+
+  const { prefectureOptions, cityOptions, updateLocationOptions } =
+    useLocationData();
+  const { generateProfilePDF } = usePDFGenerator();
+
   const [isEditable, setIsEditable] = useState<"yes" | "no">("no");
   const [saveButtonText, setSaveButtonText] = useState(t("profile.edit"));
-  const [isLoading, setIsLoading] = useState(true);
-  const [prefectureOptions, setPrefectureOptions] = useState<string[]>([]);
-  const [cityOptions, setCityOptions] = useState<string[]>([]);
 
   useEffect(() => {
-    loadUserProfile();
-  }, []);
-
-  const loadUserProfile = async () => {
-    try {
-      setIsLoading(true);
-
-      // Load from AsyncStorage instead of database
-      const storedProfile = await AsyncStorage.getItem("userProfile");
-      if (storedProfile) {
-        const profile = JSON.parse(storedProfile);
-        setUserProfile(profile);
-        setProfileImage(profile.profileImage || null);
-        setProfileVideo(profile.profileVideo || null);
-        updateLocationOptions(profile.country, profile.prefecture);
-      } else {
-        // Create a default profile if none exists
-        const defaultProfile: UserProfile = {
-          name: "",
-          age: "",
-          country: "",
-        };
-        setUserProfile(defaultProfile);
-      }
-    } catch (error) {
-      console.error("Error loading user profile:", error);
-      // Create a minimal default profile if loading fails
-      setUserProfile({
-        name: "",
-        age: "",
-        country: "",
-      });
-    } finally {
-      setIsLoading(false);
+    if (userProfile?.country && !isLoading) {
+      updateLocationOptions(userProfile.country, userProfile.prefecture);
     }
-  };
+  }, [
+    userProfile?.country,
+    userProfile?.prefecture,
+    isLoading,
+    updateLocationOptions,
+  ]);
 
-  // Save to AsyncStorage function
-  const saveToStorage = async (profile: UserProfile) => {
-    try {
-      await AsyncStorage.setItem("userProfile", JSON.stringify(profile));
-    } catch (error) {
-      console.error("Error saving profile to storage:", error);
-    }
-  };
+  const handleImageSelected = useCallback(
+    async (imageUri: string) => {
+      setProfileImage(imageUri);
+      updateProfile({ profileImage: imageUri });
+    },
+    [setProfileImage, updateProfile]
+  );
 
-  // Helper function to update profile with a consistent pattern
-  const updateProfile = (updates: Partial<UserProfile>) => {
-    const updatedProfile: UserProfile = {
-      ...userProfile,
-      name: userProfile?.name || "",
-      ...updates,
-    };
-    setUserProfile(updatedProfile);
-    saveToStorage(updatedProfile);
-  };
-
-  const handleNameChange = async (newName: string) => {
-    const updatedProfile: UserProfile = {
-      ...userProfile,
-      name: newName,
-    };
-
-    setUserProfile(updatedProfile);
-    saveToStorage(updatedProfile);
-  };
-
-  const handleAgeChange = async (newAge: string) => {
-    const updatedProfile: UserProfile = {
-      ...userProfile,
-      name: userProfile?.name || "",
-      age: newAge,
-    };
-
-    setUserProfile(updatedProfile);
-    saveToStorage(updatedProfile);
-  };
-
-  const handleGenderChange = async (newGender: string) => {
-    const genderMap: Record<string, string> = {
-      radio_0: "Male",
-      radio_1: "Female",
-      radio_2: "Other",
-    };
-
-    const genderValue = genderMap[newGender] || newGender;
-
-    const updatedProfile: UserProfile = {
-      ...userProfile,
-      name: userProfile?.name || "",
-      gender: genderValue,
-    };
-
-    setUserProfile(updatedProfile);
-    saveToStorage(updatedProfile);
-    console.log("Gender updated:", genderValue);
-  };
-
-  const handleCountryChange = async (newCountry: string) => {
-    const updatedProfile: UserProfile = {
-      ...userProfile,
-      name: userProfile?.name || "",
-      country: newCountry,
-      prefecture: undefined, // Reset prefecture when country changes
-      city1: undefined, // Reset cities when country changes
-      city2: undefined,
-    };
-
-    setUserProfile(updatedProfile);
-    saveToStorage(updatedProfile);
-
-    // Update location options for new country immediately for better UX
-    updateLocationOptions(newCountry);
-  };
-
-  const handleStationChange = async (newStation: string) => {
-    const updatedProfile: UserProfile = {
-      ...userProfile,
-      name: userProfile?.name || "",
-      homeStation: newStation,
-    };
-
-    setUserProfile(updatedProfile);
-    saveToStorage(updatedProfile);
-  };
-
-  const handleTimeToStationFromHomeChange = async (newTime: string) => {
-    const updatedProfile: UserProfile = {
-      ...userProfile,
-      name: userProfile?.name || "",
-      timeToStationFromHome: newTime,
-    };
-
-    setUserProfile(updatedProfile);
-    saveToStorage(updatedProfile);
-  };
-
-  const handleSchoolStationChange = async (newStation: string) => {
-    const updatedProfile: UserProfile = {
-      ...userProfile,
-      name: userProfile?.name || "",
-      schoolStation: newStation,
-    };
-
-    setUserProfile(updatedProfile);
-    saveToStorage(updatedProfile);
-  };
-
-  const handleTimeToStationFromSchoolChange = async (newTime: string) => {
-    const updatedProfile: UserProfile = {
-      ...userProfile,
-      name: userProfile?.name || "",
-      timeToStationFromSchool: newTime,
-    };
-
-    setUserProfile(updatedProfile);
-    saveToStorage(updatedProfile);
-  };
-
-  const handleImageSelected = async (imageUri: string) => {
-    setProfileImage(imageUri);
-
-    const updatedProfile: UserProfile = {
-      ...userProfile,
-      name: userProfile?.name || "",
-      profileImage: imageUri,
-    };
-
-    setUserProfile(updatedProfile);
-    saveToStorage(updatedProfile);
-  };
-
-  const handleImageReset = async () => {
+  const handleImageReset = useCallback(async () => {
     setProfileImage(null);
+    updateProfile({ profileImage: undefined });
+  }, [setProfileImage, updateProfile]);
 
-    const updatedProfile: UserProfile = {
-      ...userProfile,
-      name: userProfile?.name || "",
-      profileImage: undefined,
-    };
+  const handleVideoUpdate = useCallback(
+    async (videoUri: string) => {
+      setProfileVideo(videoUri);
+      updateProfile({ profileVideo: videoUri });
+    },
+    [setProfileVideo, updateProfile]
+  );
 
-    setUserProfile(updatedProfile);
-    saveToStorage(updatedProfile);
-  };
-
-  const handleVideoUpdate = async (videoUri: string) => {
-    setProfileVideo(videoUri);
-
-    const updatedProfile: UserProfile = {
-      ...userProfile,
-      name: userProfile?.name || "",
-      profileVideo: videoUri,
-    };
-
-    setUserProfile(updatedProfile);
-    saveToStorage(updatedProfile);
-  };
-
-  const handleVideoReset = async () => {
+  const handleVideoReset = useCallback(async () => {
     setProfileVideo(null);
+    updateProfile({ profileVideo: undefined });
+  }, [setProfileVideo, updateProfile]);
 
-    const updatedProfile: UserProfile = {
-      ...userProfile,
-      name: userProfile?.name || "",
-      profileVideo: undefined,
-    };
-
-    setUserProfile(updatedProfile);
-    saveToStorage(updatedProfile);
-  };
-
-  const handlePostalCodeChange = async (newPostalCode: string) => {
-    const updatedProfile: UserProfile = {
-      ...userProfile,
-      name: userProfile?.name || "Default Name",
-      postalCode: newPostalCode,
-      profileImage: profileImage || undefined,
-      profileVideo: profileVideo || undefined,
-    };
-
-    setUserProfile(updatedProfile);
-    saveToStorage(updatedProfile);
-  };
-
-  const handlePrefectureChange = async (newPrefecture: string) => {
-    const updatedProfile: UserProfile = {
-      ...userProfile,
-      name: userProfile?.name || "Default Name",
-      prefecture: newPrefecture,
-      city1: undefined, // Reset cities when prefecture changes
-      city2: undefined,
-      profileImage: profileImage || undefined,
-      profileVideo: profileVideo || undefined,
-    };
-
-    setUserProfile(updatedProfile);
-    saveToStorage(updatedProfile);
-
-    // Update city options for new prefecture immediately
-    if (userProfile?.country) {
-      updateLocationOptions(userProfile.country, newPrefecture);
-    }
-  };
-
-  const handleCity1Change = async (newCity1: string) => {
-    const updatedProfile: UserProfile = {
-      ...userProfile,
-      name: userProfile?.name || "Default Name",
-      city1: newCity1,
-      profileImage: profileImage || undefined,
-      profileVideo: profileVideo || undefined,
-    };
-
-    setUserProfile(updatedProfile);
-    saveToStorage(updatedProfile);
-  };
-
-  const handleCity2Change = async (newCity2: string) => {
-    const updatedProfile: UserProfile = {
-      ...userProfile,
-      name: userProfile?.name || "Default Name",
-      city2: newCity2,
-      profileImage: profileImage || undefined,
-      profileVideo: profileVideo || undefined,
-    };
-
-    setUserProfile(updatedProfile);
-    saveToStorage(updatedProfile);
-  };
-
-  const handleStreetAddressChange = async (newStreetAddress: string) => {
-    const updatedProfile: UserProfile = {
-      ...userProfile,
-      name: userProfile?.name || "Default Name",
-      streetAddress: newStreetAddress,
-      profileImage: profileImage || undefined,
-      profileVideo: profileVideo || undefined,
-    };
-
-    setUserProfile(updatedProfile);
-    saveToStorage(updatedProfile);
-  };
-
-  const handlePhoneNumberChange = async (newPhoneNumber: string) => {
-    const updatedProfile: UserProfile = {
-      ...userProfile,
-      name: userProfile?.name || "Default Name",
-      phoneNumber: newPhoneNumber,
-      profileImage: profileImage || undefined,
-      profileVideo: profileVideo || undefined,
-    };
-
-    setUserProfile(updatedProfile);
-    saveToStorage(updatedProfile);
-  };
-
-  const handleEmailChange = async (newEmail: string) => {
-    const updatedProfile: UserProfile = {
-      ...userProfile,
-      name: userProfile?.name || "Default Name",
-      email: newEmail,
-      profileImage: profileImage || undefined,
-      profileVideo: profileVideo || undefined,
-    };
-
-    setUserProfile(updatedProfile);
-    saveToStorage(updatedProfile);
-  };
-
-  const handleVisaTypeChange = async (newVisaType: string) => {
-    const updatedProfile: UserProfile = {
-      ...userProfile,
-      name: userProfile?.name || "Default Name",
-      visaType: newVisaType,
-      profileImage: profileImage || undefined,
-      profileVideo: profileVideo || undefined,
-    };
-
-    setUserProfile(updatedProfile);
-    saveToStorage(updatedProfile);
-  };
-
-  const handleVisaValidityPeriodChange = async (newPeriod: string) => {
-    const updatedProfile: UserProfile = {
-      ...userProfile,
-      name: userProfile?.name || "Default Name",
-      visaValidityPeriod: newPeriod,
-      profileImage: profileImage || undefined,
-      profileVideo: profileVideo || undefined,
-    };
-
-    setUserProfile(updatedProfile);
-    saveToStorage(updatedProfile);
-  };
-
-  const handleResidenceStatusChange = async (newStatus: string) => {
-    const updatedProfile: UserProfile = {
-      ...userProfile,
-      name: userProfile?.name || "Default Name",
-      residenceStatus: newStatus,
-      profileImage: profileImage || undefined,
-      profileVideo: profileVideo || undefined,
-    };
-
-    setUserProfile(updatedProfile);
-    saveToStorage(updatedProfile);
-  };
-
-  const handleResidenceStatusChangeScheduleChange = async (
-    newSchedule: string
-  ) => {
-    const updatedProfile: UserProfile = {
-      ...userProfile,
-      name: userProfile?.name || "Default Name",
-      residenceStatusChangeSchedule: newSchedule,
-      profileImage: profileImage || undefined,
-      profileVideo: profileVideo || undefined,
-    };
-
-    setUserProfile(updatedProfile);
-    saveToStorage(updatedProfile);
-  };
-
-  const handleJapaneseLevelChange = async (newLevel: string) => {
-    const updatedProfile: UserProfile = {
-      ...userProfile,
-      name: userProfile?.name || "Default Name",
-      japaneseLevel: newLevel,
-      profileImage: profileImage || undefined,
-      profileVideo: profileVideo || undefined,
-    };
-
-    setUserProfile(updatedProfile);
-    saveToStorage(updatedProfile);
-  };
-
-  const handleAvailableFromTimeChange = async (newTime: string) => {
-    const updatedProfile: UserProfile = {
-      ...userProfile,
-      name: userProfile?.name || "Default Name",
-      availableFromTime: newTime,
-      profileImage: profileImage || undefined,
-      profileVideo: profileVideo || undefined,
-    };
-
-    setUserProfile(updatedProfile);
-    saveToStorage(updatedProfile);
-  };
-
-  const handleAvailableToTimeChange = async (newTime: string) => {
-    const updatedProfile: UserProfile = {
-      ...userProfile,
-      name: userProfile?.name || "Default Name",
-      availableToTime: newTime,
-      profileImage: profileImage || undefined,
-      profileVideo: profileVideo || undefined,
-    };
-
-    setUserProfile(updatedProfile);
-    saveToStorage(updatedProfile);
-  };
-
-  const handleCurrentOccupationChange = async (newOccupation: string) => {
-    const updatedProfile: UserProfile = {
-      ...userProfile,
-      name: userProfile?.name || "Default Name",
-      currentOccupation: newOccupation,
-      profileImage: profileImage || undefined,
-      profileVideo: profileVideo || undefined,
-    };
-
-    setUserProfile(updatedProfile);
-    saveToStorage(updatedProfile);
-  };
-
-  const handleDesiredJobTypeChange = async (newJobType: string) => {
-    const updatedProfile: UserProfile = {
-      ...userProfile,
-      name: userProfile?.name || "Default Name",
-      desiredJobType: newJobType,
-      profileImage: profileImage || undefined,
-      profileVideo: profileVideo || undefined,
-    };
-
-    setUserProfile(updatedProfile);
-    saveToStorage(updatedProfile);
-  };
-
-  const handleWorkHistoryChange = async (newHistory: string) => {
-    const updatedProfile: UserProfile = {
-      ...userProfile,
-      name: userProfile?.name || "Default Name",
-      workHistory: newHistory,
-      profileImage: profileImage || undefined,
-      profileVideo: profileVideo || undefined,
-    };
-
-    setUserProfile(updatedProfile);
-    saveToStorage(updatedProfile);
-  };
-
-  const handleAvailableDaysChange = async (newDays: string) => {
-    const updatedProfile: UserProfile = {
-      ...userProfile,
-      name: userProfile?.name || "Default Name",
-      availableDays: newDays,
-      profileImage: profileImage || undefined,
-      profileVideo: profileVideo || undefined,
-    };
-
-    setUserProfile(updatedProfile);
-    saveToStorage(updatedProfile);
-  };
-
-  const handlePreferredWorkStyleChange = async (newWorkStyle: string) => {
-    const updatedProfile: UserProfile = {
-      ...userProfile,
-      name: userProfile?.name || "Default Name",
-      preferredWorkStyle: newWorkStyle,
-      profileImage: profileImage || undefined,
-      profileVideo: profileVideo || undefined,
-    };
-
-    setUserProfile(updatedProfile);
-    saveToStorage(updatedProfile);
-  };
-
-  const handleAutoFillAddress = async () => {
+  const handleAutoFillAddress = useCallback(async () => {
     if (!userProfile?.postalCode) {
       Alert.alert(t("alert.error"), "Please enter a postal code first");
       return;
     }
 
     const addressInfo = getAddressByPostalCode(userProfile.postalCode);
-
     if (!addressInfo) {
       Alert.alert(
         t("alert.error"),
@@ -517,409 +126,37 @@ export default function ProfileScreen() {
       return;
     }
 
-    // Update the profile with the address information
-    const updatedProfile: UserProfile = {
-      ...userProfile,
-      name: userProfile?.name || "Default Name",
+    updateProfile({
       country: addressInfo.country,
       prefecture: addressInfo.prefecture,
       city1: addressInfo.city1,
       city2: addressInfo.city2,
       streetAddress: addressInfo.streetAddress,
-      profileImage: profileImage || undefined,
-      profileVideo: profileVideo || undefined,
-    };
+    });
 
-    setUserProfile(updatedProfile);
-    saveToStorage(updatedProfile);
-
-    // Update location options for the new country/prefecture
     updateLocationOptions(addressInfo.country, addressInfo.prefecture);
 
     Alert.alert(
       t("alert.success"),
       `Address auto-filled for ${addressInfo.city1}, ${addressInfo.prefecture}, ${addressInfo.country}`
     );
-  };
+  }, [userProfile?.postalCode, updateProfile, updateLocationOptions, t]);
 
-  const updateLocationOptions = (countryCode?: string, prefecture?: string) => {
-    if (!countryCode) {
-      setPrefectureOptions([]);
-      setCityOptions([]);
-      return;
-    }
-
-    // Get country code from country name mapping
-    const countryCodeMap: Record<string, string> = {
-      Japan: "JP",
-      Uzbekistan: "UZ",
-      Russia: "RU",
-      "United Kingdom": "GB",
-      Spain: "ES",
-      Germany: "DE",
-    };
-
-    const code = countryCodeMap[countryCode] || countryCode;
-
-    //prefecture options
-    const prefectures = databaseService.getPrefecturesByCountry(code);
-    setPrefectureOptions(prefectures.map((p) => p.name));
-
-    // city options
-    if (prefecture) {
-      const cities = databaseService.getCitiesByPrefecture(prefecture, code);
-      setCityOptions(cities.map((c) => c.name));
-    } else {
-      const allCities = databaseService.getCitiesByCountry(code);
-      setCityOptions(allCities.map((c) => c.name));
-    }
-  };
-
-  // Only update location options when country or prefecture changes manually, not during initial load
-  useEffect(() => {
-    if (userProfile?.country && !isLoading) {
-      updateLocationOptions(userProfile.country, userProfile.prefecture);
-    }
-  }, [isLoading]); // Remove userProfile dependencies to prevent conflicts
-
-  const handleSaveEdit = async () => {
+  const handleSaveEdit = useCallback(async () => {
     if (isEditable === "no") {
-      // Enable editing
       setIsEditable("yes");
       setSaveButtonText(t("profile.save"));
     } else {
-      // Save current profile to AsyncStorage
-      if (userProfile) {
-        try {
-          await saveToStorage(userProfile);
-          console.log("Profile saved successfully");
-        } catch (error) {
-          console.error("Error saving profile:", error);
-        }
-      }
-
       setIsEditable("no");
       setSaveButtonText(t("profile.edit"));
     }
-  };
+  }, [isEditable, t]);
 
-  const handleDownloadProfile = async () => {
-    try {
-      if (!userProfile) {
-        Alert.alert(t("alert.error"), t("alert.noProfileData"));
-        return;
-      }
-
-      // Convert profile image to base64 if exists
-      let imageBase64 = "";
-      if (profileImage) {
-        try {
-          console.log("Profile image URI:", profileImage);
-          // Check if the image is a local file URI
-          if (profileImage.startsWith("file://")) {
-            console.log("Converting local file to base64...");
-            const base64 = await FileSystem.readAsStringAsync(profileImage, {
-              encoding: FileSystem.EncodingType.Base64,
-            });
-            // Determine the image type (assuming jpg/jpeg for now, but you might want to detect this)
-            const imageType = profileImage.toLowerCase().includes(".png")
-              ? "png"
-              : "jpeg";
-            imageBase64 = `data:image/${imageType};base64,${base64}`;
-            console.log(
-              "Base64 conversion successful, length:",
-              imageBase64.length
-            );
-          } else if (profileImage.startsWith("data:")) {
-            // Already a base64 data URL
-            imageBase64 = profileImage;
-            console.log("Image already in base64 format");
-          } else {
-            // For other URIs, try to fetch and convert
-            console.warn(
-              "Image URI type not supported for PDF generation:",
-              profileImage
-            );
-          }
-        } catch (error) {
-          console.warn("Could not convert image to base64:", error);
-        }
-      } else {
-        console.log("No profile image to include in PDF");
-      }
-
-      // Generate HTML content for PDF
-      const htmlContent = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="utf-8">
-          <title>Profile - ${userProfile.name || "User"}</title>
-          <style>
-            body {
-              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-              margin: 20px;
-              color: #333;
-              line-height: 1.6;
-            }
-            .header {
-              text-align: center;
-              margin-bottom: 30px;
-              border-bottom: 2px solid #48A6AC;
-              padding-bottom: 20px;
-            }
-            .profile-image {
-              width: 120px;
-              height: 120px;
-              border-radius: 50%;
-              object-fit: cover;
-              margin: 0 auto 15px;
-              display: block;
-              border: 3px solid #48A6AC;
-            }
-            .name {
-              font-size: 28px;
-              font-weight: bold;
-              color: #48A6AC;
-              margin: 0;
-            }
-            .table {
-              width: 100%;
-              border-collapse: collapse;
-              margin: 20px 0;
-              background: white;
-              box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            }
-            .table th {
-              background: #48A6AC;
-              color: white;
-              padding: 12px;
-              text-align: left;
-              font-weight: bold;
-              border: 1px solid #ddd;
-            }
-            .table td {
-              padding: 12px;
-              border: 1px solid #ddd;
-              vertical-align: top;
-            }
-            .table tr:nth-child(even) {
-              background: #f9f9f9;
-            }
-            .section {
-              margin: 30px 0;
-            }
-            .section-title {
-              font-size: 20px;
-              font-weight: bold;
-              color: #48A6AC;
-              margin-bottom: 15px;
-              border-bottom: 1px solid #48A6AC;
-              padding-bottom: 5px;
-            }
-            .flag {
-              font-size: 18px;
-              margin-right: 8px;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            ${imageBase64 ? `<img src="${imageBase64}" class="profile-image" alt="Profile Photo" />` : `<div class="profile-image" style="background: #DAE3FF; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #002775;">📷</div>`}
-            <h1 class="name">${userProfile.name || "User Profile"}</h1>
-            <p>Generated on ${new Date().toLocaleDateString()}</p>
-          </div>
-
-          <div class="section">
-            <h2 class="section-title">Personal Information</h2>
-            <table class="table">
-              <tr>
-                <th>Field</th>
-                <th>Value</th>
-              </tr>
-              <tr>
-                <td><strong>Name</strong></td>
-                <td>${userProfile.name || "Not specified"}</td>
-              </tr>
-              <tr>
-                <td><strong>Age</strong></td>
-                <td>${userProfile.age || "Not specified"}</td>
-              </tr>
-              <tr>
-                <td><strong>Gender</strong></td>
-                <td>${userProfile.gender || "Not specified"}</td>
-              </tr>
-              <tr>
-                <td><strong>Country</strong></td>
-                <td>${userProfile.country || "Not specified"}</td>
-              </tr>
-              <tr>
-                <td><strong>Phone Number</strong></td>
-                <td>${userProfile.phoneNumber || "Not specified"}</td>
-              </tr>
-              <tr>
-                <td><strong>Email</strong></td>
-                <td>${userProfile.email || "Not specified"}</td>
-              </tr>
-            </table>
-          </div>
-
-          <div class="section">
-            <h2 class="section-title">Address Information</h2>
-            <table class="table">
-              <tr>
-                <th>Field</th>
-                <th>Value</th>
-              </tr>
-              <tr>
-                <td><strong>Postal Code</strong></td>
-                <td>${userProfile.postalCode || "Not specified"}</td>
-              </tr>
-              <tr>
-                <td><strong>Prefecture</strong></td>
-                <td>${userProfile.prefecture || "Not specified"}</td>
-              </tr>
-              <tr>
-                <td><strong>City 1</strong></td>
-                <td>${userProfile.city1 || "Not specified"}</td>
-              </tr>
-              <tr>
-                <td><strong>City 2</strong></td>
-                <td>${userProfile.city2 || "Not specified"}</td>
-              </tr>
-              <tr>
-                <td><strong>Street Address</strong></td>
-                <td>${userProfile.streetAddress || "Not specified"}</td>
-              </tr>
-            </table>
-          </div>
-
-          <div class="section">
-            <h2 class="section-title">Transportation</h2>
-            <table class="table">
-              <tr>
-                <th>Field</th>
-                <th>Value</th>
-              </tr>
-              <tr>
-                <td><strong>Home Station</strong></td>
-                <td>${userProfile.homeStation || "Not specified"}</td>
-              </tr>
-              <tr>
-                <td><strong>Time to Home Station</strong></td>
-                <td>${userProfile.timeToStationFromHome || "Not specified"} minutes</td>
-              </tr>
-              <tr>
-                <td><strong>School Station</strong></td>
-                <td>${userProfile.schoolStation || "Not specified"}</td>
-              </tr>
-              <tr>
-                <td><strong>Time to School Station</strong></td>
-                <td>${userProfile.timeToStationFromSchool || "Not specified"} minutes</td>
-              </tr>
-            </table>
-          </div>
-
-          <div class="section">
-            <h2 class="section-title">Visa & Status Information</h2>
-            <table class="table">
-              <tr>
-                <th>Field</th>
-                <th>Value</th>
-              </tr>
-              <tr>
-                <td><strong>Visa Type</strong></td>
-                <td>${userProfile.visaType || "Not specified"}</td>
-              </tr>
-              <tr>
-                <td><strong>Visa Validity Period</strong></td>
-                <td>${userProfile.visaValidityPeriod || "Not specified"}</td>
-              </tr>
-              <tr>
-                <td><strong>Residence Status</strong></td>
-                <td>${userProfile.residenceStatus || "Not specified"}</td>
-              </tr>
-              <tr>
-                <td><strong>Status Change Schedule</strong></td>
-                <td>${userProfile.residenceStatusChangeSchedule || "Not specified"}</td>
-              </tr>
-              <tr>
-                <td><strong>Japanese Level</strong></td>
-                <td>${userProfile.japaneseLevel || "Not specified"}</td>
-              </tr>
-            </table>
-          </div>
-
-          <div class="section">
-            <h2 class="section-title">Availability</h2>
-            <table class="table">
-              <tr>
-                <th>Field</th>
-                <th>Value</th>
-              </tr>
-              <tr>
-                <td><strong>Available Days</strong></td>
-                <td>${userProfile.availableDays ? userProfile.availableDays.split("&").join(", ") : "Not specified"}</td>
-              </tr>
-              <tr>
-                <td><strong>Available From</strong></td>
-                <td>${userProfile.availableFromTime || "Not specified"}</td>
-              </tr>
-              <tr>
-                <td><strong>Available To</strong></td>
-                <td>${userProfile.availableToTime || "Not specified"}</td>
-              </tr>
-            </table>
-          </div>
-
-          <div class="section">
-            <h2 class="section-title">Work Information</h2>
-            <table class="table">
-              <tr>
-                <th>Field</th>
-                <th>Value</th>
-              </tr>
-              <tr>
-                <td><strong>Current Occupation</strong></td>
-                <td>${userProfile.currentOccupation || "Not specified"}</td>
-              </tr>
-              <tr>
-                <td><strong>Desired Job Type</strong></td>
-                <td>${userProfile.desiredJobType || "Not specified"}</td>
-              </tr>
-              <tr>
-                <td><strong>Work History</strong></td>
-                <td>${userProfile.workHistory || "Not specified"}</td>
-              </tr>
-            </table>
-          </div>
-        </body>
-        </html>
-      `;
-
-      // Generate PDF
-      const { uri } = await Print.printToFileAsync({
-        html: htmlContent,
-        base64: false,
-      });
-
-      // Share or save the PDF
-      if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(uri, {
-          mimeType: "application/pdf",
-          dialogTitle: "Share Profile PDF",
-          UTI: "com.adobe.pdf",
-        });
-      } else {
-        Alert.alert(t("alert.success"), `${t("alert.pdfSavedTo")}${uri}`);
-      }
-
-      console.log("PDF generated successfully:", uri);
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-      Alert.alert(t("alert.error"), t("alert.pdfGenerationFailed"));
+  const handleDownloadProfile = useCallback(async () => {
+    if (userProfile) {
+      await generateProfilePDF(userProfile, profileImage);
     }
-  };
+  }, [userProfile, profileImage, generateProfilePDF]);
 
   return (
     <ErrorBoundary>
@@ -939,409 +176,80 @@ export default function ProfileScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 20 }}
         >
-          <View className="flex-row gap-[11px]">
-            <TextWithIcon
-              icon="IdentificationCard"
-              text={userProfile?.name || ""}
-              type="input"
-              className="w-[240px]"
-              onValueChange={handleNameChange}
-              info={t("profile.info.name")}
-              editable={isEditable}
-            />
-            <ImagePickerComponent
-              currentImage={profileImage}
-              onImageSelected={handleImageSelected}
-              onImageReset={handleImageReset}
-            />
-            <VideoPickerComponent
-              currentVideo={profileVideo}
-              onVideoSelected={handleVideoUpdate}
-              onVideoReset={handleVideoReset}
-            />
-          </View>
-          <Separator width={360} />
-          <TextWithIcon
-            icon="Cake"
-            text={userProfile?.age || "Select age"}
-            type="select"
-            info={t("profile.info.age")}
-            options={[
-              "16",
-              "17",
-              "18",
-              "19",
-              "20",
-              "21",
-              "22",
-              "23",
-              "24",
-              "25",
-              "26",
-              "27",
-              "28",
-              "29",
-              "30",
-            ]}
-            className="w-[150px]"
-            onValueChange={handleAgeChange}
-            editable={isEditable}
+          <PersonalInfoSection
+            userProfile={userProfile}
+            isEditable={isEditable}
+            onNameChange={handleNameChange}
+            onAgeChange={handleAgeChange}
+            onGenderChange={handleGenderChange}
+            onCountryChange={handleCountryChange}
+            profileImage={profileImage}
+            profileVideo={profileVideo}
+            onImageSelected={handleImageSelected}
+            onImageReset={handleImageReset}
+            onVideoSelected={handleVideoUpdate}
+            onVideoReset={handleVideoReset}
           />
-          <Separator width={360} />
-          <TextWithIcon
-            icon="GlobeHemisphereEast"
-            text={userProfile?.country || "Select country"}
-            type="selectCountry"
-            className="w-[240px]"
-            onValueChange={handleCountryChange}
-            info={t("profile.info.country")}
-            editable={isEditable}
-          />
-          <Separator width={360} />
-          <TextWithIcon
-            text="Gender Selection"
-            icon="GenderMale&GenderFemale"
-            type="radio"
-            radioNum="3"
-            radioLabel={`*icon*GenderMale|*icon*GenderFemale|*text*${t("profile.other")}`}
-            radioColor="same&#FF6B6B&#4ECDC4"
-            editable={isEditable}
-            onValueChange={handleGenderChange}
-            info={t("profile.info.gender")}
-            currentValue={userProfile?.gender}
-          />
-          <Separator width={360} />
-          <View className="flex-row gap-[11px]">
-            <TextWithIcon
-              icon="HouseLine&Footprints"
-              text={userProfile?.homeStation || t("profile.homeStation")}
-              type="select"
-              info={t("profile.info.homeStation")}
-              options={[
-                "Shinjuku",
-                "Shibuya",
-                "Ikebukuro",
-                "Tokyo",
-                "Yokohama",
-              ]}
-              className="!w-[183px] !text-[12px]"
-              onValueChange={handleStationChange}
-              editable={isEditable}
-            />
-            <TextWithIcon
-              icon="Footprints"
-              text={userProfile?.timeToStationFromHome || "~"}
-              type="select"
-              info={t("profile.info.timeToHome")}
-              options={["5", "10", "15", "20", "25", "30"]}
-              className="!w-[153px] !text-[14px]"
-              editable={isEditable}
-              onValueChange={handleTimeToStationFromHomeChange}
-            />
-          </View>
-          <Separator width={360} />
-          <View className="flex-row gap-[11px]">
-            <TextWithIcon
-              icon="Buildings&Footprints"
-              text={userProfile?.schoolStation || t("profile.schoolStation")}
-              type="select"
-              info={t("profile.info.schoolStation")}
-              options={[
-                "Shinjuku",
-                "Shibuya",
-                "Ikebukuro",
-                "Tokyo",
-                "Yokohama",
-              ]}
-              className="!w-[183px] !text-[12px]"
-              onValueChange={handleSchoolStationChange}
-              editable={isEditable}
-            />
-            <TextWithIcon
-              icon="Footprints"
-              text={userProfile?.timeToStationFromSchool || "~"}
-              type="select"
-              info={t("profile.info.timeToSchool")}
-              options={["5", "10", "15", "20", "25", "30"]}
-              className="!w-[153px] !text-[14px]"
-              onValueChange={handleTimeToStationFromSchoolChange}
-              editable={isEditable}
-            />
-          </View>
-          <Separator width={360} />
-          <View className="flex-row gap-[11px]">
-            <TextWithIcon
-              icon="CurrencyKzt"
-              text={userProfile?.postalCode || ""}
-              type="input"
-              className="w-[174px]"
-              info={t("profile.info.postalCode")}
-              onValueChange={handlePostalCodeChange}
-              editable={isEditable}
-            />
-            <TouchableOpacity
-              onPress={handleAutoFillAddress}
-              className="h-[50px] bg-[#E8F4FD] border border-[#4A9EFF] rounded-lg flex justify-center items-center px-3"
-              disabled={isEditable === "no"}
-            >
-              <Text className="text-[#4A9EFF] font-medium text-[12px] text-center">
-                {t("profile.autoFillAddress")}
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <Separator width={360} />
-          <TextWithIcon
-            icon="MapPinArea"
-            text={userProfile?.prefecture || t("profile.selectPrefecture")}
-            className="w-[347px]"
-            type="select"
-            info={t("profile.info.prefecture")}
-            options={
-              prefectureOptions.length > 0
-                ? prefectureOptions
-                : ["Select a country first"]
-            }
-            onValueChange={handlePrefectureChange}
-            editable={isEditable}
-          />
-          <Separator width={360} />
-          <TextWithIcon
-            icon="MapTrifold"
-            text={userProfile?.city1 || t("profile.selectCity1")}
-            className="w-[347px]"
-            info={t("profile.info.city")}
-            type="select"
-            options={
-              cityOptions.length > 0
-                ? cityOptions
-                : ["Select a country/prefecture first"]
-            }
-            onValueChange={handleCity1Change}
-            editable={isEditable}
-          />
-          <Separator width={360} />
-          <TextWithIcon
-            icon="MapTrifold"
-            text={userProfile?.city2 || t("profile.selectCity2")}
-            info={t("profile.info.city")}
-            className="w-[347px]"
-            type="select"
-            options={
-              cityOptions.length > 0
-                ? cityOptions
-                : ["Select a country/prefecture first"]
-            }
-            onValueChange={handleCity2Change}
-            editable={isEditable}
-          />
-          <Separator width={360} />
-          <TextWithIcon
-            icon="BuildingApartment"
-            text={userProfile?.streetAddress || ""}
-            className="w-[347px]"
-            type="input"
-            info={t("profile.info.streetAddress")}
-            onValueChange={handleStreetAddressChange}
-            editable={isEditable}
-          />
-          <Separator width={360} />
-          <TextWithIcon
-            icon="Numpad"
-            text={userProfile?.phoneNumber || ""}
-            className="w-[347px]"
-            type="input"
-            info={t("profile.info.phoneNumber")}
-            onValueChange={handlePhoneNumberChange}
-            editable={isEditable}
-          />
-          <Separator width={360} />
-          <TextWithIcon
-            icon="At"
-            text={userProfile?.email || ""}
-            className="w-[347px]"
-            type="input"
-            info={t("profile.info.email")}
-            onValueChange={handleEmailChange}
-            editable={isEditable}
-          />
-          <Separator width={360} />
-          <View className="flex-row gap-[11px]">
-            <TextWithIcon
-              icon="Certificate"
-              text={userProfile?.visaType || t("profile.visaType")}
-              type="select"
-              info={t("profile.info.visaType")}
-              options={["Student", "Work", "Tourist", "Other"]}
-              className="!w-[183px] !text-[12px]"
-              onValueChange={handleVisaTypeChange}
-              editable={isEditable}
-            />
-            <TextComponent
-              text={
-                userProfile?.visaValidityPeriod || t("profile.validityPeriod")
-              }
-              type="input"
-              className="!w-[153px] !text-[14px]"
-              label={t("profile.validityPeriod")}
-              onValueChange={handleVisaValidityPeriodChange}
-              editable={isEditable}
-            />
-          </View>
-          <Separator width={360} />
-          <View className="flex-row gap-[11px]">
-            <TextWithIcon
-              icon="Newspaper"
-              text={
-                userProfile?.residenceStatus || t("profile.residenceStatus")
-              }
-              type="select"
-              info={t("profile.info.residenceStatus")}
-              options={["Student", "Work", "Tourist", "Other"]}
-              className="!w-[183px] !text-[12px]"
-              onValueChange={handleResidenceStatusChange}
-              editable={isEditable}
-            />
-            <TextComponent
-              text={
-                userProfile?.residenceStatusChangeSchedule ||
-                t("profile.changeSchedule")
-              }
-              type="input"
-              className="!w-[153px] !text-[14px]"
-              label={t("profile.changeSchedule")}
-              onValueChange={handleResidenceStatusChangeScheduleChange}
-              editable={isEditable}
-            />
-          </View>
-          <Separator width={360} />
-          <TextWithIcon
-            icon="ChatsCircle"
-            text={userProfile?.japaneseLevel || t("profile.japaneseLevel")}
-            type="select"
-            info={t("profile.info.japaneseLevel")}
-            options={["N5", "N4", "N3", "N2", "N1"]}
-            className="!w-[183px] !text-[12px]"
-            onValueChange={handleJapaneseLevelChange}
-            editable={isEditable}
-          />
-          <Separator width={360} />
 
-          <WeekDays
-            onAir={userProfile?.availableDays || ""}
-            useHours="no"
-            editable={isEditable}
-            onAirChange={handleAvailableDaysChange}
-            info={t("profile.info.availableDays")}
+          <TransportationSection
+            userProfile={userProfile}
+            isEditable={isEditable}
+            onStationChange={handleStationChange}
+            onTimeToStationFromHomeChange={handleTimeToStationFromHomeChange}
+            onSchoolStationChange={handleSchoolStationChange}
+            onTimeToStationFromSchoolChange={
+              handleTimeToStationFromSchoolChange
+            }
           />
-          <Separator width={360} />
-          <View className="flex-row gap-[11px]">
-            <TextWithIcon
-              icon="Clock"
-              text={
-                userProfile?.availableFromTime || t("profile.availableFromTime")
-              }
-              type="select"
-              info={t("profile.info.availableFromTime")}
-              options={[
-                "6:00",
-                "7:00",
-                "8:00",
-                "9:00",
-                "10:00",
-                "11:00",
-                "12:00",
-                "13:00",
-                "14:00",
-                "15:00",
-                "16:00",
-                "17:00",
-                "18:00",
-                "19:00",
-                "20:00",
-              ]}
-              className="!w-[193px] !text-[16px]"
-              onValueChange={handleAvailableFromTimeChange}
-              editable={isEditable}
-            />
 
-            <TextComponent
-              text={
-                userProfile?.availableToTime || t("profile.availableToTime")
-              }
-              type="select"
-              className="!w-[143px] !text-[12px]"
-              options={[
-                "6:00",
-                "7:00",
-                "8:00",
-                "9:00",
-                "10:00",
-                "11:00",
-                "12:00",
-                "13:00",
-                "14:00",
-                "15:00",
-                "16:00",
-                "17:00",
-                "18:00",
-                "19:00",
-                "20:00",
-                "21:00",
-                "22:00",
-                "23:00",
-              ]}
-              onValueChange={handleAvailableToTimeChange}
-              editable={isEditable}
-            />
-          </View>
-          <Separator width={360} />
-          <TextWithIcon
-            icon="Briefcase"
-            text={userProfile?.currentOccupation || ""}
-            type="input"
-            info={t("profile.info.currentOccupation")}
-            className="!w-[347px] !text-[16px]"
-            onValueChange={handleCurrentOccupationChange}
-            editable={isEditable}
+          <AddressSection
+            userProfile={userProfile}
+            isEditable={isEditable}
+            prefectureOptions={prefectureOptions}
+            cityOptions={cityOptions}
+            onPostalCodeChange={handlePostalCodeChange}
+            onPrefectureChange={handlePrefectureChange}
+            onCity1Change={handleCity1Change}
+            onCity2Change={handleCity2Change}
+            onStreetAddressChange={handleStreetAddressChange}
+            onAutoFill={handleAutoFillAddress}
           />
-          <Separator width={360} />
-          <TextWithIcon
-            icon="Bank"
-            text={userProfile?.desiredJobType || ""}
-            type="input"
-            info={t("profile.info.desiredJobType")}
-            className="!w-[347px] !text-[16px]"
-            onValueChange={handleDesiredJobTypeChange}
-            editable={isEditable}
+
+          <ContactInfoSection
+            userProfile={userProfile}
+            isEditable={isEditable}
+            onPhoneNumberChange={handlePhoneNumberChange}
+            onEmailChange={handleEmailChange}
           />
-          <Separator width={360} />
-          <TextWithIcon
-            icon="Table"
-            text={userProfile?.workHistory || ""}
-            type="input"
-            info={t("profile.info.workHistory")}
-            className="!w-[347px] !text-[16px]"
-            onValueChange={handleWorkHistoryChange}
-            editable={isEditable}
+
+          <VisaInfoSection
+            userProfile={userProfile}
+            isEditable={isEditable}
+            onVisaTypeChange={handleVisaTypeChange}
+            onVisaValidityPeriodChange={handleVisaValidityPeriodChange}
+            onResidenceStatusChange={handleResidenceStatusChange}
+            onResidenceStatusChangeScheduleChange={
+              handleResidenceStatusChangeScheduleChange
+            }
+            onJapaneseLevelChange={handleJapaneseLevelChange}
           />
-          <Separator width={360} />
-          <View className="flex-row justify-center items-center  gap-[11px]">
-            <TouchableOpacity onPress={handleSaveEdit}>
-              <View className="h-[60px] w-[90px] bg-[#ECF7F8] border border-[#48A6AC] rounded-lg flex px-[16px] py-[8px]">
-                <Text className="text-[#48A6AC] font-semibold text-[28px]">
-                  {saveButtonText}
-                </Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={handleDownloadProfile}>
-              <View className="h-[60px] w-[90px] bg-[#EFEDFF] border border-[#555AE9] rounded-lg flex-row px-[11px] py-[12px] ">
-                <Text className="text-[#555AE9] font-semibold text-[28px] mt-[-4px]">
-                  DL
-                </Text>
-                <DownloadSimple size={32} color="#555AE9" />
-              </View>
-            </TouchableOpacity>
-          </View>
+
+          <WorkInfoSection
+            userProfile={userProfile}
+            isEditable={isEditable}
+            onCurrentOccupationChange={handleCurrentOccupationChange}
+            onDesiredJobTypeChange={handleDesiredJobTypeChange}
+            onWorkHistoryChange={handleWorkHistoryChange}
+            onAvailableDaysChange={handleAvailableDaysChange}
+            onAvailableFromTimeChange={handleAvailableFromTimeChange}
+            onAvailableToTimeChange={handleAvailableToTimeChange}
+          />
+
+          <ProfileActionButtons
+            saveButtonText={saveButtonText}
+            onSaveEdit={handleSaveEdit}
+            onDownloadProfile={handleDownloadProfile}
+          />
         </ScrollView>
       </SafeAreaView>
     </ErrorBoundary>

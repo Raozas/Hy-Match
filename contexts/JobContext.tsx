@@ -1,6 +1,12 @@
 import { JobData } from "@/components/CardComponent";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import jobDataJson from "../data/jobData.json";
 
 interface JobContextType {
@@ -25,8 +31,18 @@ export function JobProvider({ children }: { children: React.ReactNode }) {
   const [jobs, setJobs] = useState<JobData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Save jobs to storage
+  const saveJobs = useCallback(async (updatedJobs: JobData[]) => {
+    try {
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedJobs));
+      console.log("Jobs saved to storage");
+    } catch (error) {
+      console.error("Error saving jobs:", error);
+    }
+  }, []);
+
   // Load jobs from storage or use default data
-  const loadJobs = async () => {
+  const loadJobs = useCallback(async () => {
     try {
       setIsLoading(true);
       const storedJobs = await AsyncStorage.getItem(STORAGE_KEY);
@@ -50,50 +66,43 @@ export function JobProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  // Save jobs to storage
-  const saveJobs = async (updatedJobs: JobData[]) => {
-    try {
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedJobs));
-      console.log("Jobs saved to storage");
-    } catch (error) {
-      console.error("Error saving jobs:", error);
-    }
-  };
+  }, []);
 
   // Update job status
-  const updateJobStatus = async (
-    jobId: string,
-    newStatus: JobData["status"]
-  ) => {
-    const updatedJobs = jobs.map((job) =>
-      job.id.toString() === jobId ? { ...job, status: newStatus } : job
-    );
-
-    setJobs(updatedJobs);
-    await saveJobs(updatedJobs);
-
-    console.log(`Updated job ${jobId} to status: ${newStatus}`);
-  };
+  const updateJobStatus = useCallback(
+    async (jobId: string, newStatus: JobData["status"]) => {
+      setJobs((prevJobs) => {
+        const updatedJobs = prevJobs.map((job) =>
+          job.id.toString() === jobId ? { ...job, status: newStatus } : job
+        );
+        saveJobs(updatedJobs);
+        console.log(`Updated job ${jobId} to status: ${newStatus}`);
+        return updatedJobs;
+      });
+    },
+    [saveJobs]
+  );
 
   // Get jobs by status
-  const getJobsByStatus = (status: JobData["status"]) => {
-    return jobs.filter((job) => job.status === status);
-  };
+  const getJobsByStatus = useCallback(
+    (status: JobData["status"]) => {
+      return jobs.filter((job) => job.status === status);
+    },
+    [jobs]
+  );
 
   // Get pending jobs
-  const getPendingJobs = () => {
+  const getPendingJobs = useCallback(() => {
     return jobs.filter((job) => job.status === "pending");
-  };
+  }, [jobs]);
 
   // Refresh jobs from storage
-  const refreshJobs = async () => {
+  const refreshJobs = useCallback(async () => {
     await loadJobs();
-  };
+  }, [loadJobs]);
 
   // Reset all jobs to pending status from original JSON data
-  const resetAllJobsToPending = async () => {
+  const resetAllJobsToPending = useCallback(async () => {
     try {
       setIsLoading(true);
       console.log("Resetting all jobs to pending status...");
@@ -114,10 +123,10 @@ export function JobProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   // Clear storage and reset to initial data
-  const clearStorage = async () => {
+  const clearStorage = useCallback(async () => {
     try {
       await AsyncStorage.removeItem(STORAGE_KEY);
       console.log("Storage cleared");
@@ -130,12 +139,12 @@ export function JobProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error("Error clearing storage:", error);
     }
-  };
+  }, []);
 
   // Initialize on mount
   useEffect(() => {
     loadJobs();
-  }, []);
+  }, [loadJobs]);
 
   const value: JobContextType = {
     jobs,
