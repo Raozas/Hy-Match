@@ -22,7 +22,10 @@ const JobListItem = ({
   className,
 }: JobListItemProps) => {
   const { colors } = useTheme();
-  const { t } = useLanguage();
+  const { t, translateJobData } = useLanguage();
+
+  // Translate job data based on current language
+  const translatedJobData = translateJobData(jobData);
 
   const getSwipeActions = () => {
     switch (jobData.status) {
@@ -140,18 +143,18 @@ const JobListItem = ({
       >
         <TextWithIcon
           icon="BuildingOffice"
-          text={jobData.company}
+          text={translatedJobData.company}
           className="text-[12px] w-[140px]"
           type="default"
         />
 
         <TextComponent
-          text={jobData.position}
+          text={translatedJobData.position}
           type="default"
           className="text-[12px]"
         />
         <TextComponent
-          text={jobData.salary}
+          text={translatedJobData.salary}
           type="default"
           className="text-[12px]"
         />

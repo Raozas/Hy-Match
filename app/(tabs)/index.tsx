@@ -170,8 +170,7 @@ export default function HomeScreen() {
         rating: [],
       });
 
-      // Reapply filters to refresh the job list
-      await new Promise((resolve) => setTimeout(resolve, 300)); // Small delay for better UX
+      await new Promise((resolve) => setTimeout(resolve, 300)); 
       applyFiltersToJobs();
 
       // Reset current job index
@@ -188,23 +187,15 @@ export default function HomeScreen() {
     // Update job status in context
     await updateJobStatus(swipedJob.id.toString(), "refusal");
 
-    // Remove job from filtered array immediately
-    setFilteredJobs((prev) =>
-      prev.filter((job) => job.id.toString() !== swipedJob.id.toString())
-    );
-
+    // Move to next job
+    setCurrentJobIndex((prev) => prev + 1);
     setSwipeDirection(null);
   };
 
   const handleSwipeRight = async (swipedJob: JobData) => {
-    // Update job status in context
     await updateJobStatus(swipedJob.id.toString(), "choosed");
 
-    // Remove job from filtered array immediately
-    setFilteredJobs((prev) =>
-      prev.filter((job) => job.id.toString() !== swipedJob.id.toString())
-    );
-
+    setCurrentJobIndex((prev) => prev + 1);
     setSwipeDirection(null);
   };
 
@@ -212,7 +203,10 @@ export default function HomeScreen() {
     setSwipeDirection(direction);
   };
 
-  const currentJob = filteredJobs[currentJobIndex];
+  const currentJob =
+    currentJobIndex < filteredJobs.length
+      ? filteredJobs[currentJobIndex]
+      : null;
 
   return (
     <GestureHandlerRootView className="flex-1">
@@ -246,6 +240,11 @@ export default function HomeScreen() {
                 onSwipeRight={handleSwipeRight}
                 onSwipeStateChange={handleSwipeStateChange}
                 className=""
+                nextCards={filteredJobs.slice(
+                  currentJobIndex + 1,
+                  currentJobIndex + 4
+                )} 
+                maxVisibleCards={3}
               />
             ) : (
               <View className="items-center">
@@ -273,7 +272,17 @@ export default function HomeScreen() {
 
           {/* Swipe Instructions */}
           {currentJob && (
-            <View className="px-4" style={{ marginBottom: 20, bottom: 20, position: "absolute", left: 0, right: 0 }}>
+            <View
+              className="px-4"
+              style={{
+                marginBottom: 20,
+                bottom: 20,
+                position: "absolute",
+                left: 0,
+                right: 0,
+                zIndex: 1000,
+              }}
+            >
               <View className="flex-row justify-between items-center">
                 <View
                   className="h-[48px] w-[48px] rounded-full items-center justify-center"

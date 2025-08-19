@@ -32,16 +32,18 @@ import {
   Table,
   Train,
   Tram,
+  X,
 } from "phosphor-react-native";
 import React, { useEffect, useState } from "react";
 import {
-  Alert,
+  Modal,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { useLanguage } from "../contexts/LanguageContext";
 import { useTheme } from "../contexts/ThemeContext";
 
 const iconMap = {
@@ -176,12 +178,14 @@ const TextWithIcon = ({
   currentValue,
 }: TextWithIconProps) => {
   const { colors } = useTheme();
+  const { t } = useLanguage();
   const iconNames = icon.split("&");
   const isMultipleIcons = iconNames.length > 1;
   const [inputValue, setInputValue] = useState(text);
   const [selectedValue, setSelectedValue] = useState(text);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [infoVisible, setInfoVisible] = useState(true);
+  const [isInfoModalVisible, setIsInfoModalVisible] = useState(false);
   const [selectedRadio, setSelectedRadio] = useState<string>("");
 
   // Sync inputValue and selectedValue with text prop
@@ -261,17 +265,52 @@ const TextWithIcon = ({
 
   const handleInfoPress = () => {
     if (infoVisible) {
-      // Show info with Done button
-      Alert.alert("Info", info, [
-        {
-          text: "Done",
-          onPress: () => {
-            setInfoVisible(false);
-            setTapCount(0);
-          },
-        },
-      ]);
+      // Show info modal instead of alert
+      setIsInfoModalVisible(true);
     }
+  };
+
+  const handleCloseInfoModal = () => {
+    setIsInfoModalVisible(false);
+    setInfoVisible(false);
+    setTapCount(0);
+  };
+
+  // Function to get field name based on icon
+  const getFieldName = () => {
+    const iconToFieldMap: Record<string, string> = {
+      BuildingOffice: "field.company",
+      GraduationCap: "field.position",
+      CurrencyJpy: "field.salary",
+      ChatsCircle: "field.languageSkill",
+      "HouseLine&Footprints": "field.walkTime",
+      Tram: "field.station",
+      Star: "field.rating",
+      Clock: "field.hours",
+      CalendarDots: "field.schedule",
+      IdentificationCard: "field.id",
+      Cake: "field.age",
+      GlobeHemisphereEast: "field.country",
+      MapPin: "field.location",
+      At: "field.email",
+      Numpad: "field.phone",
+      Certificate: "field.certification",
+      Briefcase: "field.jobType",
+      Bank: "field.bankInfo",
+    };
+
+    // Handle multiple icons (like "HouseLine&Footprints")
+    if (iconNames.length > 1) {
+      const combinedIcon = iconNames.join("&");
+      const translationKey =
+        iconToFieldMap[combinedIcon] ||
+        iconToFieldMap[iconNames[0]] ||
+        "field.information";
+      return t(translationKey);
+    }
+
+    const translationKey = iconToFieldMap[icon] || "field.information";
+    return t(translationKey);
   };
 
   const handleIconAreaPress = () => {
@@ -629,6 +668,95 @@ const TextWithIcon = ({
         )}
       </TouchableOpacity>
       <View className="flex-1 h-[48px] justify-center">{renderContent()}</View>
+
+      {/* Info Modal */}
+      <Modal
+        visible={isInfoModalVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={handleCloseInfoModal}
+      >
+        <View className="flex-1 bg-black/50 justify-center items-center px-4">
+          <View
+            className="bg-white rounded-3xl p-6 w-full max-w-sm mx-4"
+            style={{ backgroundColor: colors.surface }}
+          >
+            <View className="flex-row items-center justify-between mb-4">
+              <View className="flex-row items-center gap-3">
+                <View className="h-[48px] w-[48px] rounded-full bg-[#EBDFCC] items-center justify-center">
+                  {isMultipleIcons ? (
+                    <>
+                      {/* First icon - left top */}
+                      {iconNames[0] &&
+                        iconMap[iconNames[0] as IconName] &&
+                        React.createElement(iconMap[iconNames[0] as IconName], {
+                          size: 23,
+                          color: "#002775",
+                          weight: "duotone",
+                          style: { position: "absolute", top: 8, left: 8 },
+                        })}
+                      {/* Second icon - right bottom */}
+                      {iconNames[1] &&
+                        iconMap[iconNames[1] as IconName] &&
+                        React.createElement(iconMap[iconNames[1] as IconName], {
+                          size: 23,
+                          color: "#9C0000",
+                          weight: "duotone",
+                          style: { position: "absolute", bottom: 6, right: 6 },
+                        })}
+                    </>
+                  ) : (
+                    React.createElement(iconMap[icon as IconName], {
+                      size: 32,
+                      color: "#002775",
+                      weight: "duotone",
+                    })
+                  )}
+                </View>
+
+                {/* Field name */}
+                <Text
+                  className="text-lg font-bold"
+                  style={{ color: colors.text }}
+                >
+                  {getFieldName()}
+                </Text>
+              </View>
+
+              {/* Close button */}
+              <TouchableOpacity
+                onPress={handleCloseInfoModal}
+                className="p-2"
+                activeOpacity={0.7}
+              >
+                <X size={24} color={colors.text} weight="bold" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Info content */}
+            <ScrollView className="max-h-60">
+              <Text
+                className="text-base leading-6"
+                style={{ color: colors.textSecondary }}
+              >
+                {info}
+              </Text>
+            </ScrollView>
+
+            {/* Done button */}
+            <TouchableOpacity
+              onPress={handleCloseInfoModal}
+              className="mt-6 py-3 px-6 rounded-xl items-center"
+              style={{ backgroundColor: colors.primary }}
+              activeOpacity={0.8}
+            >
+              <Text className="text-white font-semibold text-base">
+                {t("common.done")}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };

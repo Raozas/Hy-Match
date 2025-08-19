@@ -6,6 +6,7 @@ interface LanguageContextType {
   currentLanguage: Language;
   setLanguage: (language: Language) => void;
   t: (key: string) => string;
+  translateJobData: (data: any) => any;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(
@@ -31,6 +32,7 @@ const translations = {
 
     // Common
     "common.pullToRefresh": "Pull to refresh",
+    "common.done": "Done",
 
     // Filter
     "filter.all": "All",
@@ -96,6 +98,57 @@ const translations = {
     "profession.reception": "Reception",
     "profession.picking": "Picking",
     "profession.manufacturingAssistant": "Manufacturing Assistant",
+    "profession.callCenter": "Call Center",
+    "profession.security": "Security Guard",
+    "profession.hotelCleaning": "Hotel Cleaning",
+    "profession.translationAssistant": "Translation Assistant",
+    "profession.serving": "Serving",
+    "profession.itSupport": "IT Support",
+    "profession.inspection": "Inspection Work",
+    "profession.cafeStaff": "Cafe Staff",
+    "profession.inventoryManagement": "Inventory Management",
+    "profession.receptionGuide": "Reception & Guide",
+
+    // Stations
+    "station.shibuya": "Shibuya",
+    "station.shinjuku": "Shinjuku",
+    "station.ikebukuro": "Ikebukuro",
+    "station.shinagawa": "Shinagawa",
+    "station.ueno": "Ueno",
+    "station.tokyo": "Tokyo",
+    "station.akihabara": "Akihabara",
+    "station.ginza": "Ginza",
+    "station.yurakucho": "Yurakucho",
+    "station.otemachi": "Otemachi",
+    "station.shimbashi": "Shimbashi",
+    "station.hamamatsucho": "Hamamatsucho",
+    "station.kanda": "Kanda",
+    "station.ebisu": "Ebisu",
+    "station.roppongi": "Roppongi",
+    "station.meguro": "Meguro",
+    "station.omotesando": "Omotesando",
+    "station.aoyamaItchome": "Aoyama-itchome",
+    "station.akasakaMitsuke": "Akasaka-mitsuke",
+    "station.tameikeSanno": "Tameike-sanno",
+    "station.harajuku": "Harajuku",
+    "station.yoyogi": "Yoyogi",
+    "station.yotsuya": "Yotsuya",
+
+    // Days of Week
+    "day.monday": "Monday",
+    "day.tuesday": "Tuesday",
+    "day.wednesday": "Wednesday",
+    "day.thursday": "Thursday",
+    "day.friday": "Friday",
+    "day.saturday": "Saturday",
+    "day.sunday": "Sunday",
+
+    // Japanese Language Levels
+    "jlpt.n1": "N1",
+    "jlpt.n2": "N2",
+    "jlpt.n3": "N3",
+    "jlpt.n4": "N4",
+    "jlpt.n5": "N5",
 
     // Language names
     "language.english": "English",
@@ -203,6 +256,27 @@ const translations = {
     "card.info.station": "Nearest train station to the workplace",
     "card.info.schedule": "Working days and hours for this position",
     "card.info.rating": "Company rating based on employee reviews",
+
+    // Field names for info modal
+    "field.company": "Company",
+    "field.position": "Position",
+    "field.salary": "Salary",
+    "field.languageSkill": "Language Skill",
+    "field.walkTime": "Walk Time",
+    "field.station": "Station",
+    "field.rating": "Rating",
+    "field.hours": "Hours",
+    "field.schedule": "Schedule",
+    "field.id": "ID",
+    "field.age": "Age",
+    "field.country": "Country",
+    "field.location": "Location",
+    "field.email": "Email",
+    "field.phone": "Phone",
+    "field.certification": "Certification",
+    "field.jobType": "Job Type",
+    "field.bankInfo": "Bank Info",
+    "field.information": "Information",
   },
   ja: {
     // Header
@@ -221,6 +295,7 @@ const translations = {
 
     // Common
     "common.pullToRefresh": "引っ張って更新",
+    "common.done": "完了",
 
     // Filter
     "filter.all": "全て",
@@ -286,6 +361,57 @@ const translations = {
     "profession.reception": "受付",
     "profession.picking": "ピッキング",
     "profession.manufacturingAssistant": "製造補助",
+    "profession.callCenter": "コールセンター",
+    "profession.security": "警備員",
+    "profession.hotelCleaning": "ホテル清掃",
+    "profession.translationAssistant": "翻訳アシスタント",
+    "profession.serving": "配膳",
+    "profession.itSupport": "ITサポート",
+    "profession.inspection": "検品作業",
+    "profession.cafeStaff": "カフェスタッフ",
+    "profession.inventoryManagement": "在庫管理",
+    "profession.receptionGuide": "受付・案内",
+
+    // Stations
+    "station.shibuya": "渋谷駅",
+    "station.shinjuku": "新宿駅",
+    "station.ikebukuro": "池袋駅",
+    "station.shinagawa": "品川駅",
+    "station.ueno": "上野駅",
+    "station.tokyo": "東京駅",
+    "station.akihabara": "秋葉原駅",
+    "station.ginza": "銀座駅",
+    "station.yurakucho": "有楽町駅",
+    "station.otemachi": "大手町駅",
+    "station.shimbashi": "新橋駅",
+    "station.hamamatsucho": "浜松町駅",
+    "station.kanda": "神田駅",
+    "station.ebisu": "恵比寿駅",
+    "station.roppongi": "六本木駅",
+    "station.meguro": "目黒駅",
+    "station.omotesando": "表参道駅",
+    "station.aoyamaItchome": "青山一丁目駅",
+    "station.akasakaMitsuke": "赤坂見附駅",
+    "station.tameikeSanno": "溜池山王駅",
+    "station.harajuku": "原宿駅",
+    "station.yoyogi": "代々木駅",
+    "station.yotsuya": "四ツ谷駅",
+
+    // Days of Week
+    "day.monday": "月曜日",
+    "day.tuesday": "火曜日",
+    "day.wednesday": "水曜日",
+    "day.thursday": "木曜日",
+    "day.friday": "金曜日",
+    "day.saturday": "土曜日",
+    "day.sunday": "日曜日",
+
+    // Japanese Language Levels
+    "jlpt.n1": "N1",
+    "jlpt.n2": "N2",
+    "jlpt.n3": "N3",
+    "jlpt.n4": "N4",
+    "jlpt.n5": "N5",
 
     // Language names
     "language.english": "English",
@@ -390,6 +516,27 @@ const translations = {
     "card.info.station": "職場最寄りの電車駅",
     "card.info.schedule": "この職種の勤務日と勤務時間",
     "card.info.rating": "従業員レビューに基づく会社評価",
+
+    // Field names for info modal
+    "field.company": "会社名",
+    "field.position": "職種",
+    "field.salary": "給与",
+    "field.languageSkill": "語学力",
+    "field.walkTime": "徒歩時間",
+    "field.station": "駅",
+    "field.rating": "評価",
+    "field.hours": "時間",
+    "field.schedule": "スケジュール",
+    "field.id": "ID",
+    "field.age": "年齢",
+    "field.country": "国",
+    "field.location": "場所",
+    "field.email": "メール",
+    "field.phone": "電話",
+    "field.certification": "資格",
+    "field.jobType": "職種",
+    "field.bankInfo": "銀行情報",
+    "field.information": "情報",
   },
   uz: {
     // Header
@@ -408,6 +555,7 @@ const translations = {
 
     // Common
     "common.pullToRefresh": "Yangilash uchun torting",
+    "common.done": "Tayyor",
 
     // Filter
     "filter.all": "Hammasi",
@@ -474,6 +622,57 @@ const translations = {
     "profession.reception": "Qabulxona",
     "profession.picking": "Tanlash",
     "profession.manufacturingAssistant": "Ishlab chiqarish yordamchisi",
+    "profession.callCenter": "Qo'ng'iroqlar markazi",
+    "profession.security": "Xavfsizlik xodimi",
+    "profession.hotelCleaning": "Mehmonxona tozalash",
+    "profession.translationAssistant": "Tarjimon yordamchisi",
+    "profession.serving": "Xizmat ko'rsatish",
+    "profession.itSupport": "IT yordam",
+    "profession.inspection": "Tekshirish ishi",
+    "profession.cafeStaff": "Kafe xodimi",
+    "profession.inventoryManagement": "Inventar boshqaruvi",
+    "profession.receptionGuide": "Qabulxona va yo'lboshchi",
+
+    // Stations
+    "station.shibuya": "Shibuya",
+    "station.shinjuku": "Shinjuku",
+    "station.ikebukuro": "Ikebukuro",
+    "station.shinagawa": "Shinagawa",
+    "station.ueno": "Ueno",
+    "station.tokyo": "Tokyo",
+    "station.akihabara": "Akihabara",
+    "station.ginza": "Ginza",
+    "station.yurakucho": "Yurakucho",
+    "station.otemachi": "Otemachi",
+    "station.shimbashi": "Shimbashi",
+    "station.hamamatsucho": "Hamamatsucho",
+    "station.kanda": "Kanda",
+    "station.ebisu": "Ebisu",
+    "station.roppongi": "Roppongi",
+    "station.meguro": "Meguro",
+    "station.omotesando": "Omotesando",
+    "station.aoyamaItchome": "Aoyama-itchome",
+    "station.akasakaMitsuke": "Akasaka-mitsuke",
+    "station.tameikeSanno": "Tameike-sanno",
+    "station.harajuku": "Harajuku",
+    "station.yoyogi": "Yoyogi",
+    "station.yotsuya": "Yotsuya",
+
+    // Days of Week
+    "day.monday": "Dushanba",
+    "day.tuesday": "Seshanba",
+    "day.wednesday": "Chorshanba",
+    "day.thursday": "Payshanba",
+    "day.friday": "Juma",
+    "day.saturday": "Shanba",
+    "day.sunday": "Yakshanba",
+
+    // Japanese Language Levels
+    "jlpt.n1": "N1",
+    "jlpt.n2": "N2",
+    "jlpt.n3": "N3",
+    "jlpt.n4": "N4",
+    "jlpt.n5": "N5",
 
     // Language names
     "language.english": "English",
@@ -580,10 +779,32 @@ const translations = {
     "card.info.position": "Bu lavozim uchun ish nomi va rol tavsifi",
     "card.info.salary": "Ushbu ish uchun soatlik yoki oylik maosh oralig'i",
     "card.info.languageSkill": "Talab qilinadigan yapon tili bilim darajasi",
-    "card.info.walkTime": "Eng yaqin bekattan ish joyigacha piyoda yurish vaqti",
+    "card.info.walkTime":
+      "Eng yaqin bekattan ish joyigacha piyoda yurish vaqti",
     "card.info.station": "Ish joyiga eng yaqin poyezd stansiyasi",
     "card.info.schedule": "Ushbu lavozim uchun ish kunlari va soatlari",
     "card.info.rating": "Xodimlar sharhlariga asoslangan kompaniya reytingi",
+
+    // Field names for info modal
+    "field.company": "Kompaniya",
+    "field.position": "Lavozim",
+    "field.salary": "Maosh",
+    "field.languageSkill": "Til bilish",
+    "field.walkTime": "Piyoda yurish vaqti",
+    "field.station": "Stansiya",
+    "field.rating": "Reyting",
+    "field.hours": "Soatlar",
+    "field.schedule": "Jadval",
+    "field.id": "ID",
+    "field.age": "Yosh",
+    "field.country": "Mamlakat",
+    "field.location": "Joylashuv",
+    "field.email": "Email",
+    "field.phone": "Telefon",
+    "field.certification": "Sertifikat",
+    "field.jobType": "Ish turi",
+    "field.bankInfo": "Bank ma'lumotlari",
+    "field.information": "Ma'lumot",
   },
 };
 
@@ -594,7 +815,7 @@ interface LanguageProviderProps {
 export const LanguageProvider: React.FC<LanguageProviderProps> = ({
   children,
 }) => {
-  const [currentLanguage, setCurrentLanguage] = useState<Language>("ja"); // Default to Japanese
+  const [currentLanguage, setCurrentLanguage] = useState<Language>("ja");
 
   const setLanguage = (language: Language) => {
     setCurrentLanguage(language);
@@ -605,8 +826,143 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({
     return translation[key] || key;
   };
 
+  const translateJobData = (data: any): any => {
+    if (!data) return data;
+
+    const translatePosition = (position: string): string => {
+      const positionMap: Record<string, string> = {
+        仕分け: "profession.sorting",
+        配送: "profession.delivery",
+        清掃: "profession.cleaning",
+        レジ: "profession.cashier",
+        倉庫作業: "profession.warehouse",
+        調理補助: "profession.cookingAssistant",
+        データ入力: "profession.dataEntry",
+        販売員: "profession.salesClerk",
+        事務補助: "profession.officeAssistant",
+        梱包作業: "profession.packing",
+        受付: "profession.reception",
+        ピッキング: "profession.picking",
+        製造補助: "profession.manufacturingAssistant",
+        コールセンター: "profession.callCenter",
+        警備員: "profession.security",
+        ホテル清掃: "profession.hotelCleaning",
+        翻訳アシスタント: "profession.translationAssistant",
+        配膳: "profession.serving",
+        ITサポート: "profession.itSupport",
+        検品作業: "profession.inspection",
+        カフェスタッフ: "profession.cafeStaff",
+        在庫管理: "profession.inventoryManagement",
+        "受付・案内": "profession.receptionGuide",
+      };
+      return t(positionMap[position] || position);
+    };
+
+    // Helper function to translate station
+    const translateStation = (station: string): string => {
+      const stationMap: Record<string, string> = {
+        渋谷駅: "station.shibuya",
+        新宿駅: "station.shinjuku",
+        池袋駅: "station.ikebukuro",
+        品川駅: "station.shinagawa",
+        上野駅: "station.ueno",
+        東京駅: "station.tokyo",
+        秋葉原駅: "station.akihabara",
+        銀座駅: "station.ginza",
+        有楽町駅: "station.yurakucho",
+        大手町駅: "station.otemachi",
+        新橋駅: "station.shimbashi",
+        浜松町駅: "station.hamamatsucho",
+        神田駅: "station.kanda",
+        恵比寿駅: "station.ebisu",
+        六本木駅: "station.roppongi",
+        目黒駅: "station.meguro",
+        表参道駅: "station.omotesando",
+        青山一丁目駅: "station.aoyamaItchome",
+        赤坂見附駅: "station.akasakaMitsuke",
+        溜池山王駅: "station.tameikeSanno",
+        原宿駅: "station.harajuku",
+        代々木駅: "station.yoyogi",
+        四ツ谷駅: "station.yotsuya",
+      };
+      return t(stationMap[station] || station);
+    };
+
+    // Helper function to translate days
+    const translateDays = (onAir: string): string => {
+      const dayMap: Record<string, string> = {
+        月: "day.monday",
+        火: "day.tuesday",
+        水: "day.wednesday",
+        木: "day.thursday",
+        金: "day.friday",
+        土: "day.saturday",
+        日: "day.sunday",
+      };
+
+      return onAir
+        .split("&")
+        .map((day) => {
+          const translatedDay = t(dayMap[day] || day);
+
+          if (currentLanguage === "en") {
+            return translatedDay.substring(0, 1);
+          }
+
+          if (currentLanguage === "uz") {
+            return translatedDay.substring(0, 1);
+          }
+          return translatedDay;
+        })
+        .join(" & ");
+    };
+
+    const translateLanguageSkill = (skill: string): string => {
+      const skillMap: Record<string, string> = {
+        N1: "jlpt.n1",
+        N2: "jlpt.n2",
+        N3: "jlpt.n3",
+        N4: "jlpt.n4",
+        N5: "jlpt.n5",
+      };
+      return t(skillMap[skill] || skill);
+    };
+
+    if (Array.isArray(data)) {
+      return data.map((item) => translateJobData(item));
+    }
+
+    if (typeof data === "object") {
+      const translated = { ...data };
+
+      if (translated.position) {
+        translated.position = translatePosition(translated.position);
+      }
+
+      if (translated.station) {
+        translated.station = translateStation(translated.station);
+      }
+
+      if (translated.onAir) {
+        translated.onAir = translateDays(translated.onAir);
+      }
+
+      if (translated.languageSkill) {
+        translated.languageSkill = translateLanguageSkill(
+          translated.languageSkill
+        );
+      }
+
+      return translated;
+    }
+
+    return data;
+  };
+
   return (
-    <LanguageContext.Provider value={{ currentLanguage, setLanguage, t }}>
+    <LanguageContext.Provider
+      value={{ currentLanguage, setLanguage, t, translateJobData }}
+    >
       {children}
     </LanguageContext.Provider>
   );

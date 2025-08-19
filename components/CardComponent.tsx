@@ -55,7 +55,10 @@ interface CardComponentProps {
 
 const CardComponent = ({ jobData, className }: CardComponentProps) => {
   const { colors } = useTheme();
-  const { t } = useLanguage();
+  const { t, translateJobData } = useLanguage();
+
+  // Translate job data based on current language
+  const translatedJobData = translateJobData(jobData);
 
   return (
     <View
@@ -67,27 +70,27 @@ const CardComponent = ({ jobData, className }: CardComponentProps) => {
     >
       <TextWithIcon
         icon="BuildingOffice"
-        text={jobData.company}
+        text={translatedJobData.company}
         info={t("card.info.company")}
       />
       <Separator />
       <TextWithIcon
         icon="GraduationCap"
-        text={jobData.position}
+        text={translatedJobData.position}
         info={t("card.info.position")}
       />
       <Separator />
       <View className="flex-row items-center">
         <TextWithIcon
           icon="CurrencyJpy"
-          text={jobData.salary}
+          text={translatedJobData.salary}
           className="w-[174px]"
           info={t("card.info.salary")}
         />
         <HorizontalLine />
         <TextWithIcon
           icon="ChatsCircle"
-          text={jobData.languageSkill}
+          text={translatedJobData.languageSkill}
           type="LanSkill"
           className="w-[164px] ml-2.5"
           info={t("card.info.languageSkill")}
@@ -97,24 +100,24 @@ const CardComponent = ({ jobData, className }: CardComponentProps) => {
       <View className="flex-row items-center">
         <TextWithIcon
           icon="HouseLine&Footprints"
-          text={jobData.walkTime}
+          text={translatedJobData.walkTime}
           className="w-[174px]"
           info={t("card.info.walkTime")}
         />
         <HorizontalLine />
         <TextWithIcon
           icon="Tram"
-          text={jobData.station}
+          text={translatedJobData.station}
           className="w-[164px] ml-2.5"
           type="TrainSt"
-          text2nd={jobData.stationCode}
+          text2nd={translatedJobData.stationCode}
           info={t("card.info.station")}
         />
       </View>
       <Separator />
       <WeekDays
-        onAir={jobData.onAir}
-        hours={jobData.hours}
+        onAir={translatedJobData.onAir}
+        hours={translatedJobData.hours}
         useHours="yes"
         editable="no"
         onAirChange={(newOnAir) => console.log(newOnAir)}
@@ -123,7 +126,7 @@ const CardComponent = ({ jobData, className }: CardComponentProps) => {
       <Separator />
       <TextWithIcon
         icon="Star"
-        text={jobData.rating}
+        text={translatedJobData.rating}
         className="w-[174px]"
         info={t("card.info.rating")}
       />

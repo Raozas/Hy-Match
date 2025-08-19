@@ -14,6 +14,8 @@ interface SwipeableCardProps {
   onSwipeRight?: (jobData: JobData) => void;
   onSwipeStateChange?: (direction: "left" | "right" | null) => void;
   className?: string;
+  nextCards?: JobData[]; 
+  maxVisibleCards?: number; 
 }
 
 const SwipeableCard = ({
@@ -22,6 +24,8 @@ const SwipeableCard = ({
   onSwipeRight,
   onSwipeStateChange,
   className,
+  nextCards = [],
+  maxVisibleCards = 3,
 }: SwipeableCardProps) => {
   const { colors } = useTheme();
   const { t } = useLanguage();
@@ -126,17 +130,15 @@ const SwipeableCard = ({
     const StampIcon = isChoose ? Check : X;
     const stampText = isChoose ? t("swipe.choose") : t("swipe.refuse");
 
-    
     const swipePercentage = currentSwipeDistance / screenWidth;
-    let stampOpacity = 0.15; 
-    if (swipePercentage < 0.15){
-     stampOpacity= 0;
+    let stampOpacity = 0.15;
+    if (swipePercentage < 0.15) {
+      stampOpacity = 0;
     }
 
     if (swipePercentage >= 0.5) {
-      stampOpacity = 1; 
+      stampOpacity = 1;
     } else if (swipePercentage >= 0.1) {
-      
       stampOpacity =
         0.15 + ((swipePercentage - 0.1) / (0.5 - 0.1)) * (1 - 0.15);
     }
@@ -177,18 +179,42 @@ const SwipeableCard = ({
   };
 
   return (
-    <Animated.View
-      style={{
-        transform: [{ translateX: pan.x }, { translateY: pan.y }, { rotate }],
-        opacity,
-      }}
-      {...panResponder.panHandlers}
-    >
-      <View style={{ position: "relative" }}>
-        {renderStamp()}
-        <CardComponent jobData={jobData} className={className} />
-      </View>
-    </Animated.View>
+    <View style={{ position: "relative" }}>
+      {/* Render background cards first (they'll be behind) */}
+      {nextCards.slice(0, maxVisibleCards - 1).map((card, index) => (
+        <View
+          key={`bg-${card.id}`}
+          style={{
+            position: "absolute",
+            top: (index + 1) * 25,
+            left: 0,
+            right: 0,
+            transform: [
+              { scale: 1 - (index + 1) * 0.05 }, 
+            ],
+            zIndex: maxVisibleCards - index - 2,
+            opacity: 0.7,
+          }}
+        >
+          <CardComponent jobData={card} className={className} />
+        </View>
+      ))}
+
+      {/* Main swipeable card */}
+      <Animated.View
+        style={{
+          transform: [{ translateX: pan.x }, { translateY: pan.y }, { rotate }],
+          opacity,
+          zIndex: maxVisibleCards,
+        }}
+        {...panResponder.panHandlers}
+      >
+        <View style={{ position: "relative" }}>
+          {renderStamp()}
+          <CardComponent jobData={jobData} className={className} />
+        </View>
+      </Animated.View>
+    </View>
   );
 };
 
