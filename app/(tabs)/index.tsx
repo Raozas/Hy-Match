@@ -41,6 +41,7 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [currentFilters, setCurrentFilters] = useState<FilterOptions>({
     sortBy: "",
+    sortOrder: "asc",
     professions: [],
     japaneseLevel: [],
     salaryRange: [900, 1800],
@@ -121,6 +122,8 @@ export default function HomeScreen() {
     // Sort the filtered jobs
     if (currentFilters.sortBy) {
       filtered.sort((a, b) => {
+        let comparison = 0;
+
         switch (currentFilters.sortBy) {
           case "salary":
             const aSalaryMatch = a.salary.match(/¥(\d+,?\d*)\s*~\s*(\d+,?\d*)/);
@@ -128,21 +131,34 @@ export default function HomeScreen() {
             if (aSalaryMatch && bSalaryMatch) {
               const aMaxSalary = parseInt(aSalaryMatch[2].replace(",", ""));
               const bMaxSalary = parseInt(bSalaryMatch[2].replace(",", ""));
-              return bMaxSalary - aMaxSalary; // Highest salary first
+              comparison = bMaxSalary - aMaxSalary; // Highest salary first by default
             }
-            return 0;
+            break;
 
           case "walkTime":
+          case "commutingFromSchool":
             const aWalkTime = parseInt(a.walkTime.replace(/[^\d]/g, "")) || 0;
             const bWalkTime = parseInt(b.walkTime.replace(/[^\d]/g, "")) || 0;
-            return aWalkTime - bWalkTime; // Shortest time first
+            comparison = aWalkTime - bWalkTime; // Shortest time first by default
+            break;
 
           case "rating":
-            return parseFloat(b.rating) - parseFloat(a.rating); // Highest rating first
+            comparison = parseFloat(b.rating) - parseFloat(a.rating); // Highest rating first by default
+            break;
+
+          case "publicationDate":
+            // Convert string id to number for comparison, or use string comparison
+            const aId = parseInt(a.id) || 0;
+            const bId = parseInt(b.id) || 0;
+            comparison = bId - aId; // Newest first by default
+            break;
 
           default:
-            return 0;
+            comparison = 0;
         }
+
+        // Apply sort order (asc/desc)
+        return currentFilters.sortOrder === "desc" ? comparison : -comparison;
       });
     }
 
@@ -163,6 +179,7 @@ export default function HomeScreen() {
       // Reset filters to default
       setCurrentFilters({
         sortBy: "",
+        sortOrder: "asc",
         professions: [],
         japaneseLevel: [],
         salaryRange: [900, 1800],
@@ -170,7 +187,7 @@ export default function HomeScreen() {
         rating: [],
       });
 
-      await new Promise((resolve) => setTimeout(resolve, 300)); 
+      await new Promise((resolve) => setTimeout(resolve, 300));
       applyFiltersToJobs();
 
       // Reset current job index
@@ -243,7 +260,7 @@ export default function HomeScreen() {
                 nextCards={filteredJobs.slice(
                   currentJobIndex + 1,
                   currentJobIndex + 4
-                )} 
+                )}
                 maxVisibleCards={3}
               />
             ) : (

@@ -1,6 +1,6 @@
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
-import { Check, X } from "phosphor-react-native";
+import { CaretDown, CaretUp, Check, X } from "phosphor-react-native";
 import React, { useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { JobData } from "./CardComponent";
@@ -14,6 +14,7 @@ interface FilterDropdownProps {
 
 export interface FilterOptions {
   sortBy: string;
+  sortOrder: "asc" | "desc";
   professions: string[];
   japaneseLevel: string[];
   salaryRange: [number, number];
@@ -132,6 +133,102 @@ const ratingOptions = [
   { id: "4.5+", label: "4.5+", icon: "⭐⭐⭐⭐" },
 ];
 
+const SmallTextWithIconAndSort = ({
+  icon,
+  text,
+  selected,
+  onPress,
+  sortOrder,
+  onSortOrderChange,
+  showSortIcons = false,
+}: {
+  icon: string;
+  text: string;
+  selected: boolean;
+  onPress: () => void;
+  sortOrder?: "asc" | "desc";
+  onSortOrderChange?: (order: "asc" | "desc") => void;
+  showSortIcons?: boolean;
+}) => {
+  const { colors } = useTheme();
+
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      className="flex-row items-center justify-between py-3 px-4"
+      style={{
+        backgroundColor: selected ? colors.primary + "20" : "transparent",
+        borderBottomWidth: 1,
+        borderBottomColor: colors.border + "30",
+      }}
+    >
+      <View className="flex-row items-center flex-1">
+        <Text style={{ fontSize: 16, marginRight: 8 }}>{icon}</Text>
+        <Text
+          style={{
+            color: colors.text,
+            fontSize: 14,
+            fontWeight: selected ? "600" : "400",
+          }}
+        >
+          {text}
+        </Text>
+      </View>
+
+      <View className="flex-row items-center">
+        {selected && (
+          <Check
+            size={16}
+            color={colors.primary}
+            weight="bold"
+            style={{ marginRight: 8 }}
+          />
+        )}
+
+        {showSortIcons && selected && onSortOrderChange && (
+          <View className="flex-col ml-2">
+            <TouchableOpacity
+              onPress={() => onSortOrderChange("asc")}
+              style={{
+                padding: 2,
+                backgroundColor:
+                  sortOrder === "asc" ? colors.primary + "30" : "transparent",
+                borderRadius: 4,
+              }}
+            >
+              <CaretUp
+                size={12}
+                color={
+                  sortOrder === "asc" ? colors.primary : colors.textSecondary
+                }
+                weight="bold"
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => onSortOrderChange("desc")}
+              style={{
+                padding: 2,
+                backgroundColor:
+                  sortOrder === "desc" ? colors.primary + "30" : "transparent",
+                borderRadius: 4,
+                marginTop: 2,
+              }}
+            >
+              <CaretDown
+                size={12}
+                color={
+                  sortOrder === "desc" ? colors.primary : colors.textSecondary
+                }
+                weight="bold"
+              />
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+    </TouchableOpacity>
+  );
+};
+
 const SmallTextWithIcon = ({
   icon,
   text,
@@ -182,6 +279,9 @@ export default function FilterDropdown({
   const { t } = useLanguage();
 
   const [selectedSort, setSelectedSort] = useState<string>("");
+  const [selectedSortOrder, setSelectedSortOrder] = useState<"asc" | "desc">(
+    "asc"
+  );
   const [selectedSortSubOptions, setSelectedSortSubOptions] = useState<{
     salaryType?: string;
     salaryAmount?: string;
@@ -262,9 +362,10 @@ export default function FilterDropdown({
   const applyFilters = () => {
     const filters: FilterOptions = {
       sortBy: selectedSort,
+      sortOrder: selectedSortOrder,
       professions: selectedFilters.profession,
       japaneseLevel: selectedFilters.japanese,
-      salaryRange: [900, 1800], 
+      salaryRange: [900, 1800],
       commutingEase: selectedFilters.commuting,
       rating: selectedFilters.rating,
     };
@@ -274,6 +375,7 @@ export default function FilterDropdown({
 
   const clearAllFilters = () => {
     setSelectedSort("");
+    setSelectedSortOrder("asc");
     setSelectedSortSubOptions({});
     setSelectedFilters({
       profession: [],
@@ -406,7 +508,6 @@ export default function FilterDropdown({
 
               {salaryTypeOptions.map((typeOption) => (
                 <View key={typeOption.id} style={{ marginBottom: 12 }}>
-                  
                   <View
                     className="flex-row items-center justify-between"
                     style={{ marginBottom: 8 }}
@@ -681,12 +782,15 @@ export default function FilterDropdown({
 
           <View>
             {sortOptions.map((option) => (
-              <SmallTextWithIcon
+              <SmallTextWithIconAndSort
                 key={option.id}
                 icon={option.icon}
                 text={t(option.label)}
                 selected={selectedSort === option.id}
                 onPress={() => handleSortSelect(option.id)}
+                showSortIcons={true}
+                sortOrder={selectedSortOrder}
+                onSortOrderChange={setSelectedSortOrder}
               />
             ))}
           </View>

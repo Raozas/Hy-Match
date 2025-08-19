@@ -88,44 +88,90 @@ export default function WatchListScreen() {
     const pendingJobs = getPendingJobs();
     let filtered = [...pendingJobs];
 
+    // Filter by professions
+    if (filters.professions.length > 0) {
+      filtered = filtered.filter((job) =>
+        filters.professions.includes(job.position)
+      );
+    }
+
+    // Filter by Japanese level
     if (filters.japaneseLevel.length > 0) {
       filtered = filtered.filter((job) =>
         filters.japaneseLevel.includes(job.languageSkill)
       );
     }
 
+    // Filter by salary range
+    filtered = filtered.filter((job) => {
+      const salaryMatch = job.salary.match(/¥(\d+,?\d*)\s*~\s*(\d+,?\d*)/);
+      if (salaryMatch) {
+        const minSalary = parseInt(salaryMatch[1].replace(",", ""));
+        const maxSalary = parseInt(salaryMatch[2].replace(",", ""));
+        const inRange =
+          minSalary >= filters.salaryRange[0] &&
+          maxSalary <= filters.salaryRange[1];
+        return inRange;
+      }
+      return true;
+    });
+
+    // Filter by commuting ease
+    if (filters.commutingEase.length > 0) {
+      filtered = filtered.filter((job) =>
+        filters.commutingEase.includes(job.walkTime)
+      );
+    }
+
+    // Filter by rating
     if (filters.rating.length > 0) {
       filtered = filtered.filter((job) => {
+        const jobRating = parseFloat(job.rating);
         return filters.rating.some((ratingFilter) => {
           const minRating = parseFloat(ratingFilter.replace("+", ""));
-          const jobRating = parseFloat(job.rating);
           return jobRating >= minRating;
         });
       });
     }
 
+    // Sort the filtered jobs
     if (filters.sortBy) {
-      switch (filters.sortBy) {
-        case "salary":
-          filtered.sort((a, b) => {
-            const salaryA = parseInt(a.salary.replace(/[¥,~\s]/g, ""));
-            const salaryB = parseInt(b.salary.replace(/[¥,~\s]/g, ""));
-            return salaryB - salaryA;
-          });
-          break;
-        case "publicationDate":
-          filtered.sort((a, b) => {
-            return b.onAir.localeCompare(a.onAir);
-          });
-          break;
-        case "walkTime":
-          filtered.sort((a, b) => {
-            const timeA = parseInt(a.walkTime.replace(/\D/g, ""));
-            const timeB = parseInt(b.walkTime.replace(/\D/g, ""));
-            return timeA - timeB;
-          });
-          break;
-      }
+      filtered.sort((a, b) => {
+        let comparison = 0;
+
+        switch (filters.sortBy) {
+          case "salary":
+            const aSalaryMatch = a.salary.match(/¥(\d+,?\d*)\s*~\s*(\d+,?\d*)/);
+            const bSalaryMatch = b.salary.match(/¥(\d+,?\d*)\s*~\s*(\d+,?\d*)/);
+            if (aSalaryMatch && bSalaryMatch) {
+              const aMaxSalary = parseInt(aSalaryMatch[2].replace(",", ""));
+              const bMaxSalary = parseInt(bSalaryMatch[2].replace(",", ""));
+              comparison = bMaxSalary - aMaxSalary;
+            }
+            break;
+
+          case "walkTime":
+          case "commutingFromSchool":
+            const aWalkTime = parseInt(a.walkTime.replace(/[^\d]/g, "")) || 0;
+            const bWalkTime = parseInt(b.walkTime.replace(/[^\d]/g, "")) || 0;
+            comparison = aWalkTime - bWalkTime;
+            break;
+
+          case "rating":
+            comparison = parseFloat(b.rating) - parseFloat(a.rating);
+            break;
+
+          case "publicationDate":
+            comparison = b.onAir.localeCompare(a.onAir);
+            break;
+
+          default:
+            comparison = 0;
+        }
+
+        // Apply sort order (asc/desc)
+        return filters.sortOrder === "desc" ? comparison : -comparison;
+      });
     }
 
     setFilteredJobs(filtered);
