@@ -8,7 +8,7 @@ import { SwipeInstructions } from "@/components/jobs/SwipeInstructions";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useSwipeableCards } from "@/hooks/jobs/useSwipeableCards";
-import React, { useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -34,6 +34,35 @@ export default function HomeScreen() {
     handleApplyFilters,
   } = useSwipeableCards();
 
+  // Memoize handlers to prevent unnecessary re-renders
+  const handleFilterPress = useCallback(() => setFilterVisible(true), []);
+  const handleFilterClose = useCallback(() => setFilterVisible(false), []);
+  const handleContactPress = useCallback(
+    () => setContactModalVisible(true),
+    []
+  );
+  const handleContactClose = useCallback(
+    () => setContactModalVisible(false),
+    []
+  );
+
+  // Memoize contact info to prevent recalculation
+  const contactInfo = useMemo(
+    () => ({
+      phone: currentJob
+        ? `+81-3-${Math.floor(Math.random() * 9000) + 1000}-${Math.floor(Math.random() * 9000) + 1000}`
+        : "+81-3-1234-5678",
+      email: currentJob
+        ? `hr@${currentJob.company
+            .replace(/株式会社|有限会社/g, "")
+            .toLowerCase()
+            .replace(/\s+/g, "")}.co.jp`
+        : "contact@company.co.jp",
+      company: currentJob?.company || "Company",
+    }),
+    [currentJob]
+  );
+
   return (
     <GestureHandlerRootView className="flex-1">
       <SafeAreaView style={{ backgroundColor: colors.background, flex: 1 }}>
@@ -41,7 +70,7 @@ export default function HomeScreen() {
           title={t("header.jobList")}
           leftButton="List"
           rightButton="Filter"
-          onRightPress={() => setFilterVisible(true)}
+          onRightPress={handleFilterPress}
         />
 
         <ScrollView
@@ -60,7 +89,7 @@ export default function HomeScreen() {
           <View className="flex-1 items-center justify-center absolute left-4">
             {currentJob ? (
               <SwipeableCard
-                key={`${currentJob.id}-${filteredJobs.indexOf(currentJob)}`}
+                key={currentJob.id} 
                 jobData={currentJob}
                 onSwipeLeft={handleSwipeLeft}
                 onSwipeRight={handleSwipeRight}
@@ -79,30 +108,19 @@ export default function HomeScreen() {
 
         <FilterDropdown
           visible={filterVisible}
-          onClose={() => setFilterVisible(false)}
+          onClose={handleFilterClose}
           onApplyFilters={handleApplyFilters}
           jobs={filteredJobs}
         />
 
         <ContactModal
           visible={contactModalVisible}
-          onClose={() => setContactModalVisible(false)}
+          onClose={handleContactClose}
           jobTitle={currentJob?.position}
-          contactInfo={{
-            phone: currentJob
-              ? `+81-3-${Math.floor(Math.random() * 9000) + 1000}-${Math.floor(Math.random() * 9000) + 1000}`
-              : "+81-3-1234-5678",
-            email: currentJob
-              ? `hr@${currentJob.company
-                  .replace(/株式会社|有限会社/g, "")
-                  .toLowerCase()
-                  .replace(/\s+/g, "")}.co.jp`
-              : "contact@company.co.jp",
-            company: currentJob?.company || "Company",
-          }}
+          contactInfo={contactInfo}
         />
 
-        <CustomBottomNav onContactPress={() => setContactModalVisible(true)} />
+        <CustomBottomNav onContactPress={handleContactPress} />
       </SafeAreaView>
     </GestureHandlerRootView>
   );

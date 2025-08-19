@@ -21,29 +21,56 @@ export const useSwipeableCards = () => {
   );
   const [refreshing, setRefreshing] = useState(false);
 
-  const currentJob =
-    currentJobIndex < filteredJobs.length
-      ? filteredJobs[currentJobIndex]
-      : null;
-  const nextCards = filteredJobs.slice(
-    currentJobIndex + 1,
-    currentJobIndex + 4
+  // Memoize current job and next cards for better performance
+  const currentJob = useMemo(
+    () =>
+      currentJobIndex < filteredJobs.length
+        ? filteredJobs[currentJobIndex]
+        : null,
+    [currentJobIndex, filteredJobs]
+  );
+
+  const nextCards = useMemo(
+    () => filteredJobs.slice(currentJobIndex + 1, currentJobIndex + 4),
+    [filteredJobs, currentJobIndex]
   );
 
   const handleSwipeLeft = useCallback(
     async (swipedJob: JobData) => {
-      await updateJobStatus(swipedJob.id.toString(), "refusal");
-      setCurrentJobIndex((prev) => prev + 1);
+      // Clear swipe direction immediately to prevent state bleed
       setSwipeDirection(null);
+
+      // Optimistic update for better UX
+      setCurrentJobIndex((prev) => prev + 1);
+
+      // Update job status asynchronously
+      try {
+        await updateJobStatus(swipedJob.id.toString(), "refusal");
+      } catch (error) {
+        console.error("Error updating job status:", error);
+        // Revert on error
+        setCurrentJobIndex((prev) => Math.max(0, prev - 1));
+      }
     },
     [updateJobStatus]
   );
 
   const handleSwipeRight = useCallback(
     async (swipedJob: JobData) => {
-      await updateJobStatus(swipedJob.id.toString(), "choosed");
-      setCurrentJobIndex((prev) => prev + 1);
+      // Clear swipe direction immediately to prevent state bleed
       setSwipeDirection(null);
+
+      // Optimistic update for better UX
+      setCurrentJobIndex((prev) => prev + 1);
+
+      // Update job status asynchronously
+      try {
+        await updateJobStatus(swipedJob.id.toString(), "choosed");
+      } catch (error) {
+        console.error("Error updating job status:", error);
+        // Revert on error
+        setCurrentJobIndex((prev) => Math.max(0, prev - 1));
+      }
     },
     [updateJobStatus]
   );
