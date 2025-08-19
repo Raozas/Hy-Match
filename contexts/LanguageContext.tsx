@@ -179,6 +179,7 @@ const translations = {
     "profile.desiredJobType": "Desired Job Type",
     "profile.workHistory": "Work History/Part-time Experience",
     "profile.other": "Other",
+    "profile.autoFillAddress": "Auto Fill",
 
     // Profile Info Messages
     "profile.info.name":
@@ -442,6 +443,7 @@ const translations = {
     "profile.desiredJobType": "希望の職種",
     "profile.workHistory": "過去の職歴・バイト歴",
     "profile.other": "その他",
+    "profile.autoFillAddress": "自動入力",
 
     // Profile Info Messages
     "profile.info.name": "公式文書に記載されている正式名称を入力してください。",
@@ -703,6 +705,7 @@ const translations = {
     "profile.desiredJobType": "Istagan ish turi",
     "profile.workHistory": "Ish tajribasi/Part-time tajriba",
     "profile.other": "Boshqa",
+    "profile.autoFillAddress": "Avtomatik to'ldirish",
 
     // Profile Info Messages
     "profile.info.name":

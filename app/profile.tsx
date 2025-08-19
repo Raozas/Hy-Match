@@ -19,6 +19,7 @@ import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import "../global.css";
 import { databaseService, UserProfile } from "../utils/database";
+import { getAddressByPostalCode } from "../utils/postalCodeData";
 
 export default function ProfileScreen() {
   const { colors } = useTheme();
@@ -498,6 +499,47 @@ export default function ProfileScreen() {
 
     setUserProfile(updatedProfile);
     saveToStorage(updatedProfile);
+  };
+
+  const handleAutoFillAddress = async () => {
+    if (!userProfile?.postalCode) {
+      Alert.alert(t("alert.error"), "Please enter a postal code first");
+      return;
+    }
+
+    const addressInfo = getAddressByPostalCode(userProfile.postalCode);
+
+    if (!addressInfo) {
+      Alert.alert(
+        t("alert.error"),
+        "Postal code not found. Supported cities: Tokyo, London, Moscow, Tashkent"
+      );
+      return;
+    }
+
+    // Update the profile with the address information
+    const updatedProfile: UserProfile = {
+      ...userProfile,
+      name: userProfile?.name || "Default Name",
+      country: addressInfo.country,
+      prefecture: addressInfo.prefecture,
+      city1: addressInfo.city1,
+      city2: addressInfo.city2,
+      streetAddress: addressInfo.streetAddress,
+      profileImage: profileImage || undefined,
+      profileVideo: profileVideo || undefined,
+    };
+
+    setUserProfile(updatedProfile);
+    saveToStorage(updatedProfile);
+
+    // Update location options for the new country/prefecture
+    updateLocationOptions(addressInfo.country, addressInfo.prefecture);
+
+    Alert.alert(
+      t("alert.success"),
+      `Address auto-filled for ${addressInfo.city1}, ${addressInfo.prefecture}, ${addressInfo.country}`
+    );
   };
 
   const updateLocationOptions = (countryCode?: string, prefecture?: string) => {
@@ -1027,15 +1069,26 @@ export default function ProfileScreen() {
             />
           </View>
           <Separator width={360} />
-          <TextWithIcon
-            icon="CurrencyKzt"
-            text={userProfile?.postalCode || ""}
-            type="input"
-            className="w-[174px]"
-            info={t("profile.info.postalCode")}
-            onValueChange={handlePostalCodeChange}
-            editable={isEditable}
-          />
+          <View className="flex-row gap-[11px]">
+            <TextWithIcon
+              icon="CurrencyKzt"
+              text={userProfile?.postalCode || ""}
+              type="input"
+              className="w-[174px]"
+              info={t("profile.info.postalCode")}
+              onValueChange={handlePostalCodeChange}
+              editable={isEditable}
+            />
+            <TouchableOpacity
+              onPress={handleAutoFillAddress}
+              className="h-[50px] bg-[#E8F4FD] border border-[#4A9EFF] rounded-lg flex justify-center items-center px-3"
+              disabled={isEditable === "no"}
+            >
+              <Text className="text-[#4A9EFF] font-medium text-[12px] text-center">
+                {t("profile.autoFillAddress")}
+              </Text>
+            </TouchableOpacity>
+          </View>
           <Separator width={360} />
           <TextWithIcon
             icon="MapPinArea"
