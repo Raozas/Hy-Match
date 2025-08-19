@@ -2,8 +2,8 @@ import React from "react";
 import { View } from "react-native";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { Separator } from "../CardComponent";
-import TextWithIcon from "../TextWithIcon";
 import ImagePickerComponent from "../ImagePickerComponent";
+import TextWithIcon from "../TextWithIcon";
 import VideoPickerComponent from "../VideoPickerComponent";
 
 interface PersonalInfoSectionProps {

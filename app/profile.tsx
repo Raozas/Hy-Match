@@ -15,7 +15,7 @@ import { useProfileData } from "@/hooks/profile/useProfileData";
 import { useProfileHandlers } from "@/hooks/profile/useProfileHandlers";
 import { router } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
-import { Alert, ScrollView, View } from "react-native";
+import { Alert, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import "../global.css";
 import { getAddressByPostalCode } from "../utils/postalCodeData";
