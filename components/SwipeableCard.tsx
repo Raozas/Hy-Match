@@ -195,7 +195,6 @@ const SwipeableCard = ({
       if (swipePercentage >= 0.5) {
         stampOpacity = 1;
       } else {
-        // Smoother opacity transition
         stampOpacity = 0.2 + ((swipePercentage - 0.15) / (0.5 - 0.15)) * 0.8;
       }
     }
