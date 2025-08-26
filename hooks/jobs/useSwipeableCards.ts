@@ -97,7 +97,7 @@ export const useSwipeableCards = () => {
     }
   }, [resetAllJobsToPending, resetFilters]);
 
-  // Reset current job index when filtered jobs change, but only if we're beyond the available jobs
+  // Reset current job index when filtered jobs change
   useEffect(() => {
     if (filteredJobs.length > 0 && currentJobIndex >= filteredJobs.length) {
       setCurrentJobIndex(0);
