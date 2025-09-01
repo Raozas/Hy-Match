@@ -86,7 +86,7 @@ export default function HomeScreen() {
             />
           }
         >
-          <View className="flex-1 items-center justify-center absolute left-4">
+          <View className="flex-1 items-center justify-center">
             {currentJob ? (
               <SwipeableCard
                 key={currentJob.id} 

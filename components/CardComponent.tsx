@@ -134,4 +134,4 @@ const CardComponent = ({ jobData, className }: CardComponentProps) => {
   );
 };
 
-export default CardComponent;
+export default React.memo(CardComponent);

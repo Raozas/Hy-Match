@@ -155,13 +155,19 @@ const SwipeableCard = ({
           const targetX =
             direction === "right" ? screenWidth + 100 : -screenWidth - 100;
 
+          setShowStamp(null);
+          setCurrentSwipeDistance(0);
+          onSwipeStateChange?.(null);
+          if (direction === "left") onSwipeLeft?.(jobData);
+          else onSwipeRight?.(jobData);
           // Faster, more responsive animation
           Animated.timing(pan, {
             toValue: { x: targetX, y: gestureState.dy },
             duration: 200,
-            useNativeDriver: false,
+            useNativeDriver: true,
           }).start(() => {
-            handleAnimationComplete(direction);
+            // handleAnimationComplete(direction); dont touch this
+            pan.setValue({ x: 0, y: 0 });
           });
         } else {
           // Smoother return to center with spring animation
@@ -233,50 +239,47 @@ const SwipeableCard = ({
     );
   }, [showStamp, currentSwipeDistance, t]);
 
-  // Memoized background cards for better performance
-  const backgroundCards = useMemo(() => {
-    return nextCards.slice(0, maxVisibleCards - 1).map((card, index) => (
+  return (
+  <View style={{ position: "relative" }}>
+
+    {nextCards[0] && (
       <View
-        key={`bg-${card.id}`}
         style={{
           position: "absolute",
-          top: (index + 1) * 20,
+          top: 20,
           left: 0,
           right: 0,
-          transform: [{ scale: 1 - (index + 1) * 0.04 }],
-          zIndex: maxVisibleCards - index - 2,
-          opacity: 0.8 - index * 0.2,
+          transform: [{ scale: 0.96 }],
+          opacity: 0.9,
+          zIndex: maxVisibleCards - 1,
         }}
       >
-        <CardComponent jobData={card} className={className} />
+        <CardComponent jobData={nextCards[0]} className={className} />
       </View>
-    ));
-  }, [nextCards, maxVisibleCards, className]);
+    )}
 
-  return (
-    <View style={{ position: "relative" }}>
-      {backgroundCards}
 
-      <Animated.View
-        style={{
-          transform: [
-            { translateX: pan.x },
-            { translateY: pan.y },
-            { rotate },
-            { scale },
-          ],
-          opacity,
-          zIndex: maxVisibleCards,
-        }}
-        {...panResponder.panHandlers}
-      >
-        <View style={{ position: "relative" }}>
-          {renderStamp()}
-          <CardComponent jobData={jobData} className={className} />
-        </View>
-      </Animated.View>
-    </View>
-  );
+    <Animated.View
+      style={{
+        transform: [
+          { translateX: pan.x },
+          { translateY: pan.y },
+          { rotate },
+          { scale },
+        ],
+        opacity,
+        zIndex: maxVisibleCards,
+      }}
+      {...panResponder.panHandlers}
+    >
+      <View style={{ position: "relative" }}>
+        {renderStamp()}
+        <CardComponent jobData={jobData} className={className} />
+      </View>
+    </Animated.View>
+  </View>
+);
+
 };
 
 export default SwipeableCard;
