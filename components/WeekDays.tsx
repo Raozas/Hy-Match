@@ -1,12 +1,14 @@
-import { CalendarDots, Clock, Info } from "phosphor-react-native";
+import { CalendarDots, Clock, Info, X } from "phosphor-react-native";
 import React, { useState } from "react";
 import {
-  Alert,
+  Modal,
+  ScrollView,
   Text,
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
 } from "react-native";
+import { useLanguage } from "../contexts/LanguageContext";
 import { useTheme } from "../contexts/ThemeContext";
 
 interface WeekDaysProps {
@@ -27,8 +29,10 @@ const WeekDays = ({
   info,
 }: WeekDaysProps) => {
   const { colors } = useTheme();
+  const { t } = useLanguage();
   const [localOnAir, setLocalOnAir] = useState(onAir);
   const [infoVisible, setInfoVisible] = useState(true);
+  const [isInfoModalVisible, setIsInfoModalVisible] = useState(false);
   const [tapCount, setTapCount] = useState(0);
   const onAirDays = localOnAir ? localOnAir.split("&") : [];
   const weekDays = ["月", "火", "水", "木", "金", "土", "日"];
@@ -50,17 +54,15 @@ const WeekDays = ({
 
   const handleInfoPress = () => {
     if (infoVisible && info) {
-      // Show info with Done button
-      Alert.alert("Info", info, [
-        {
-          text: "Done",
-          onPress: () => {
-            setInfoVisible(false);
-            setTapCount(0);
-          },
-        },
-      ]);
+      // Show info modal instead of alert
+      setIsInfoModalVisible(true);
     }
+  };
+
+  const handleCloseInfoModal = () => {
+    setIsInfoModalVisible(false);
+    setInfoVisible(false);
+    setTapCount(0);
   };
 
   const handleIconAreaPress = () => {
@@ -78,7 +80,7 @@ const WeekDays = ({
 
   const renderDay = (day: string) => {
     const isOnAir = onAirDays.includes(day);
-    const bgColor = isOnAir ? "bg-[#E9A6A6]" : "bg-[#C7C7C7]";
+    const bgColor = isOnAir ? "bg-[#E99C4B]" : "bg-[#A5A7A4]";
 
     const dayContent = (
       <View
@@ -106,7 +108,7 @@ const WeekDays = ({
   return (
     <View className="flex-row items-center gap-4 w-full">
       <TouchableWithoutFeedback onPress={handleIconAreaPress}>
-        <View className="h-[48px] w-[48px] rounded-full bg-[#DAE3FF] items-center justify-center p-0 relative">
+        <View className="h-[48px] w-[48px] rounded-full bg-[#EBDFCC] items-center justify-center p-0 relative">
           <CalendarDots size={32} color="#002775" weight="duotone" />
           {info && infoVisible && (
             <TouchableOpacity
@@ -133,6 +135,64 @@ const WeekDays = ({
           </View>
         )}
       </View>
+
+      {/* Info Modal */}
+      <Modal
+        visible={isInfoModalVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={handleCloseInfoModal}
+      >
+        <View className="flex-1 bg-black/50 justify-center items-center px-4">
+          <View
+            className="bg-white rounded-3xl p-6 w-full max-w-sm mx-4"
+            style={{ backgroundColor: colors.surface }}
+          >
+            <View className="flex-row items-center justify-between mb-4">
+              <View className="flex-row items-center gap-3">
+                <View className="h-[48px] w-[48px] rounded-full bg-[#EBDFCC] items-center justify-center">
+                  <CalendarDots size={32} color="#002775" weight="duotone" />
+                </View>
+
+                <Text
+                  className="text-lg font-bold"
+                  style={{ color: colors.text }}
+                >
+                  {t("field.schedule")}
+                </Text>
+              </View>
+
+              <TouchableOpacity
+                onPress={handleCloseInfoModal}
+                className="p-2"
+                activeOpacity={0.7}
+              >
+                <X size={24} color={colors.text} weight="bold" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView className="max-h-60">
+              <Text
+                className="text-base leading-6"
+                style={{ color: colors.textSecondary }}
+              >
+                {info}
+              </Text>
+            </ScrollView>
+
+            <TouchableOpacity
+              onPress={handleCloseInfoModal}
+              className="mt-6 py-3 px-6 rounded-xl items-center"
+              style={{ backgroundColor: colors.primary }}
+              activeOpacity={0.8}
+            >
+              <Text className="text-white font-semibold text-base">
+                {t("common.done")}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };

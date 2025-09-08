@@ -1,14 +1,16 @@
 import { Tabs } from "expo-router";
-import { House, PaperPlaneTilt, HandWithdraw } from "phosphor-react-native";
+import { Heart, Phone, Trash } from "phosphor-react-native";
 import React from "react";
 import { Platform } from "react-native";
 
 import { HapticTab } from "@/components/HapticTab";
 import TabBarBackground from "@/components/ui/TabBarBackground";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 
 export default function TabLayout() {
   const { colors } = useTheme();
+  const { t } = useLanguage();
 
   return (
     <Tabs
@@ -16,9 +18,10 @@ export default function TabLayout() {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textSecondary,
         tabBarStyle: {
-          backgroundColor: colors.background,
+          backgroundColor: colors.tabBackground,
           borderTopColor: colors.border,
           borderTopWidth: 1,
+          display: "none", // Hide the default tab bar
           ...Platform.select({
             ios: {
               // Use a transparent background on iOS to show the blur effect
@@ -35,18 +38,27 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
+          title: t("contact.howToContact"),
           tabBarIcon: ({ color }) => (
-            <House size={28} color={color} weight="fill" />
+            <Phone size={28} color={color} weight="fill" />
           ),
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="refused-jobs"
         options={{
-          title: "Jobs",
+          title: t("header.refusedJobs"),
           tabBarIcon: ({ color }) => (
-            <HandWithdraw size={28} color={color} weight="fill" />
+            <Trash size={28} color={color} weight="fill" />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="chosen-jobs"
+        options={{
+          title: t("header.chosenJobs"),
+          tabBarIcon: ({ color }) => (
+            <Heart size={28} color={color} weight="fill" />
           ),
         }}
       />

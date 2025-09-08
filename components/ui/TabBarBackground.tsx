@@ -10,9 +10,15 @@ export default function TabBarBackground() {
       style={[
         StyleSheet.absoluteFill,
         {
-          backgroundColor: colors.background,
+          backgroundColor: colors.tabBackground || colors.surface, // Use tabBackground or fallback to surface
           borderTopColor: colors.border,
           borderTopWidth: 1,
+          // You can add more styling here:
+          // opacity: 0.9, // For transparency
+          // shadowColor: "#000",
+          // shadowOffset: { width: 0, height: -2 },
+          // shadowOpacity: 0.1,
+          // shadowRadius: 4,
         },
       ]}
     />

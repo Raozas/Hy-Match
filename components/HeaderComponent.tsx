@@ -14,6 +14,7 @@ import {
   Plus,
   Sliders,
   Sun,
+  User,
   X,
 } from "phosphor-react-native";
 import React, { useState } from "react";
@@ -62,12 +63,12 @@ const HeaderButton = ({ type, onPress }: HeaderButtonProps) => {
 
   const handlePress = () => {
     // Handle special navigation cases
-    if (type === "List") {
+    if (onPress) {
+      onPress();
+    } else if (type === "List") {
       router.push("/profile");
     } else if (type === "Back" || type === "Close") {
       router.back();
-    } else if (onPress) {
-      onPress();
     }
   };
 
@@ -75,7 +76,7 @@ const HeaderButton = ({ type, onPress }: HeaderButtonProps) => {
     <TouchableOpacity
       onPress={handlePress}
       style={{
-        backgroundColor: colors.surface,
+        backgroundColor: colors.headerBtn,
         borderColor: colors.border,
       }}
       className="h-[40px] w-[40px] rounded-full border items-center justify-center"
@@ -93,7 +94,7 @@ const ThemeToggle = () => {
     <TouchableOpacity
       onPress={toggleTheme}
       style={{
-        backgroundColor: colors.surface,
+        backgroundColor: colors.headerBtn,
         borderColor: colors.border,
       }}
       className="h-[40px] w-[40px] rounded-full border items-center justify-center ml-2"
@@ -129,7 +130,7 @@ const LanguageSwitcher = () => {
       <TouchableOpacity
         onPress={() => setIsDropdownVisible(!isDropdownVisible)}
         style={{
-          backgroundColor: colors.surface,
+          backgroundColor: colors.headerBtn,
           borderColor: colors.border,
         }}
         className="h-[40px] w-[40px] rounded-full border items-center justify-center ml-2"
@@ -186,6 +187,141 @@ const LanguageSwitcher = () => {
   );
 };
 
+// User Menu Dropdown Component (Profile, Theme, Language)
+const UserMenuDropdown = () => {
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const { t, currentLanguage, setLanguage } = useLanguage();
+  const { colors, isDark, toggleTheme } = useTheme();
+
+  const languages: { code: Language; label: string; flag: string }[] = [
+    { code: "en", label: t("language.english"), flag: "🇺🇸" },
+    { code: "ja", label: t("language.japanese"), flag: "🇯🇵" },
+    { code: "uz", label: t("language.uzbek"), flag: "🇺🇿" },
+  ];
+
+  const menuItems = [
+    {
+      icon: User,
+      label: t("header.profile"),
+      action: () => {
+        router.push("/profile");
+        setDropdownOpen(false);
+      },
+    },
+    {
+      icon: isDark ? Sun : Moon,
+      label: t("header.themeMode"),
+      action: () => {
+        toggleTheme();
+        setDropdownOpen(false);
+      },
+    },
+    {
+      icon: List,
+      label: t("header.newJobs"),
+      action: () => {
+        router.push("/watchList");
+        setDropdownOpen(false);
+      },
+    }
+  ];
+
+  return (
+    <View className="relative">
+      <TouchableOpacity
+        onPress={() => setDropdownOpen(!dropdownOpen)}
+        style={{
+          backgroundColor: colors.headerBtn,
+          borderColor: colors.border,
+        }}
+        className="h-[40px] w-[40px] rounded-full border items-center justify-center"
+      >
+        <List
+          size={20}
+          color={colors.text}
+          weight={dropdownOpen ? "fill" : "regular"}
+        />
+      </TouchableOpacity>
+
+      {dropdownOpen && (
+        <View
+          style={{
+            position: "absolute",
+            top: 45,
+            left: 0,
+            backgroundColor: colors.surface,
+            borderColor: colors.border,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.25,
+            shadowRadius: 8,
+            elevation: 5,
+            zIndex: 1000,
+          }}
+          className="rounded-lg border min-w-[180px] py-2"
+        >
+          {/* Menu Items */}
+          {menuItems.map((item, index) => (
+            <TouchableOpacity
+              key={index}
+              onPress={item.action}
+              className="px-4 py-3 flex-row items-center border-b"
+              style={{ borderBottomColor: colors.border + "40" }}
+            >
+              <item.icon size={18} color={colors.text} weight="regular" />
+              <Text className="text-sm ml-3" style={{ color: colors.text }}>
+                {item.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+
+          {/* Language Section */}
+          <View
+            className="px-4 py-3 border-t"
+            style={{ borderTopColor: colors.border + "40" }}
+          >
+            <View className="flex-row items-center mb-2">
+              <Globe size={16} color={colors.text} weight="regular" />
+              <Text
+                className="text-xs ml-2 font-medium opacity-70"
+                style={{ color: colors.text }}
+              >
+                {t("header.language")}
+              </Text>
+            </View>
+            {languages.map((lang) => (
+              <TouchableOpacity
+                key={lang.code}
+                onPress={() => {
+                  setLanguage(lang.code);
+                  setDropdownOpen(false);
+                }}
+                className="flex-row items-center justify-between py-2 pl-2"
+                style={{
+                  backgroundColor:
+                    currentLanguage === lang.code
+                      ? colors.primary + "15"
+                      : "transparent",
+                }}
+              >
+                <View className="flex-row items-center space-x-2">
+                  <Text className="text-sm">{lang.flag}</Text>
+                  <Text className="text-xs" style={{ color: colors.text }}>
+                    {lang.label}
+                  </Text>
+                </View>
+                {currentLanguage === lang.code && (
+                  <Check size={14} color={colors.primary} weight="bold" />
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      )}
+    </View>
+  );
+};
+
 const HeaderTitle = ({ title }: HeaderTitleProps) => {
   const { colors } = useTheme();
 
@@ -217,21 +353,30 @@ const HeaderComponent = ({
   return (
     <View
       style={{
-        backgroundColor: colors.background,
+        backgroundColor: colors.surface,
         borderBottomColor: colors.border,
       }}
       className={`flex-row items-center gap-2 h-[90px] w-full px-4 border-b mb-8 ${className || ""}`}
     >
       <View className="w-[40px]">
-        {leftButton && <HeaderButton type={leftButton} onPress={onLeftPress} />}
+        {leftButton && leftButton === "List" ? (
+          <UserMenuDropdown />
+        ) : leftButton ? (
+          <HeaderButton type={leftButton} onPress={onLeftPress} />
+        ) : null}
       </View>
       <HeaderTitle title={title} />
       <View className="flex-row items-center">
         {rightButton && (
           <HeaderButton type={rightButton} onPress={onRightPress} />
         )}
-        {showLanguageSwitcher && <LanguageSwitcher />}
-        {showThemeToggle && <ThemeToggle />}
+        {/* Hide individual theme and language switchers when using List dropdown */}
+        {(!leftButton || leftButton !== "List") && showLanguageSwitcher && (
+          <LanguageSwitcher />
+        )}
+        {(!leftButton || leftButton !== "List") && showThemeToggle && (
+          <ThemeToggle />
+        )}
       </View>
     </View>
   );
